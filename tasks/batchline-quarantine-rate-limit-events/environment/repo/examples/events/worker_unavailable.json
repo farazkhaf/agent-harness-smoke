@@ -1,0 +1,14 @@
+{
+  "event_id": "evt_worker_000001",
+  "event_type": "worker.unavailable",
+  "occurred_at": "2026-01-01T12:00:00Z",
+  "payload": {
+    "last_seen_at": "2026-01-01T12:00:00Z",
+    "queue": "media",
+    "service": "thumbnailer",
+    "unavailable_seconds": 240,
+    "worker": "thumb-01"
+  },
+  "schema_version": 1,
+  "source": "batchline.workers"
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1",
+  "observer": "git",
+  "baseline_ref": "9061dd811e7f626fb76acfcab85fea569a71c96d",
+  "changed_files": 2,
+  "changed_paths": [
+    "src/batchline/execution/__init__.py",
+    "src/batchline/execution/providers.py"
+  ],
+  "lines_added": 7,
+  "lines_deleted": 245,
+  "untracked_files": 1,
+  "untracked_paths": [
+    "src/batchline/execution/legacy_remote.py"
+  ],
+  "unexpected_files_changed": 1,
+  "unexpected_paths": [
+    "src/batchline/execution/__init__.py"
+  ],
+  "forbidden_files_changed": 0,
+  "forbidden_paths": []
+}

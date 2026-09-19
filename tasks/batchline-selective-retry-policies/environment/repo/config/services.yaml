@@ -1,0 +1,61 @@
+services:
+  thumbnailer:
+    queue: media
+    concurrency: 4
+    timeout_seconds: 120
+    max_retries: 4
+    enabled: true
+  notifier:
+    queue: notifications
+    concurrency: 8
+    timeout_seconds: 45
+    max_retries: 5
+    enabled: true
+  exporter:
+    queue: exports
+    concurrency: 2
+    timeout_seconds: 300
+    max_retries: 3
+    enabled: true
+  cleanup:
+    queue: maintenance
+    concurrency: 1
+    timeout_seconds: 600
+    max_retries: 2
+    enabled: true
+  importer:
+    queue: imports
+    concurrency: 3
+    timeout_seconds: 240
+    max_retries: 3
+    enabled: true
+  indexer:
+    queue: search
+    concurrency: 6
+    timeout_seconds: 90
+    max_retries: 4
+    enabled: true
+  webhook:
+    queue: callbacks
+    concurrency: 10
+    timeout_seconds: 30
+    max_retries: 6
+    enabled: true
+  auditor:
+    queue: audit
+    concurrency: 2
+    timeout_seconds: 180
+    max_retries: 2
+    enabled: true
+  archiver:
+    queue: storage
+    concurrency: 2
+    timeout_seconds: 480
+    max_retries: 3
+    enabled: true
+  reconciler:
+    queue: maintenance
+    concurrency: 2
+    timeout_seconds: 360
+    max_retries: 4
+    enabled: true

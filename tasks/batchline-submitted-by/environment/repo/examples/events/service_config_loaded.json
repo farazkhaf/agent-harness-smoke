@@ -1,0 +1,18 @@
+{
+  "event_id": "evt_config_000003",
+  "event_type": "service.config_loaded",
+  "occurred_at": "2026-01-01T12:00:00Z",
+  "payload": {
+    "environment": "production",
+    "service": "thumbnailer",
+    "settings": {
+      "concurrency": 4,
+      "enabled": true,
+      "max_retries": 4,
+      "queue": "media",
+      "timeout_seconds": 120
+    }
+  },
+  "schema_version": 1,
+  "source": "batchline.config"
+}

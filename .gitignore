@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Harbor/Docker run output
+trials/
+jobs/
+smoke-report/
+
+# Local caches
+.cache/
+cache/
+
+# Local secrets / shell environment
+.env
+.env.*
+*.secret
+harbor-shell.ps1
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Generated release candidates / local report staging
+dist/
+results/**/_*-stage/
+results/**/_custom-*-stage/
+*.zip

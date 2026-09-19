@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "observer": "git",
+  "baseline_ref": "9359cef4e028bd19e3b88b9c476f3fa0d8b98a56",
+  "changed_files": 1,
+  "changed_paths": [
+    "config/job-policies.toml"
+  ],
+  "lines_added": 3,
+  "lines_deleted": 3,
+  "untracked_files": 0,
+  "untracked_paths": [],
+  "unexpected_files_changed": 0,
+  "unexpected_paths": [],
+  "forbidden_files_changed": 0,
+  "forbidden_paths": []
+}

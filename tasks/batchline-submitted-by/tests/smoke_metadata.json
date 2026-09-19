@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1",
+  "task_id": "batchline-submitted-by",
+  "task_version": "0.1.0",
+  "task_type": "focused-task",
+  "capability_family": "multi-surface-repository-edit",
+  "anchor_id": "batchline",
+  "anchor_version": "0.2",
+  "workspace_observer": "git",
+  "expected_edit_globs": [],
+  "forbidden_edit_globs": []
+}

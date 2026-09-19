@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "published_task_id": "agent-harness-smoke/batchline-quarantine-rate-limit-events",
+  "task_version_source": "suite manifest",
+  "trial_name": "batchline-quarantine-rate-limit__HrAPbHk",
+  "task_checksum": "4c889f8218454ab4e312ed49ac4a2a853833a8e2d090ecd25108cc8e45475571",
+  "harness": "opencode",
+  "harness_version": "1.18.30",
+  "provider": "fireworks_ai",
+  "model": "accounts/fireworks/models/glm-5p3-flash",
+  "reward": 1.0,
+  "input_tokens": 30906,
+  "cached_tokens": 18432,
+  "output_tokens": 300,
+  "cost_usd": 0.00260356,
+  "started_at": "2026-09-18T21:44:51.556813Z",
+  "finished_at": "2026-09-18T21:46:37.947081Z",
+  "source_hashes": {
+    "internal_harbor_result_sha256": "78fbda2710e69ac16235f0b50678a285b34f42c82bdf0098bb8f3aacd0dceaed",
+    "internal_raw_trajectory_sha256": "ede5bdecf577b049d0d529cf98ce3f6140894367f7dc9bbbc92879e100839e78",
+    "published_sanitized_trajectory_sha256": "29ae586c87349c7e4253c627fb19bf30a817b404a6ed4909e8bfdb0ec3e4a86d"
+  },
+  "redactions": [
+    "host-local trial URI",
+    "host-local resolved task paths",
+    "host-local trials directory",
+    "rendered host system-information fingerprint"
+  ]
+}

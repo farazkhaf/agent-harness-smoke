@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "published_task_id": "agent-harness-smoke/batchline-selective-retry-policies",
+  "task_version_source": "suite manifest",
+  "trial_name": "batchline-selective-retry-polici__GL3Faro",
+  "task_checksum": "fc0fc74cbb24e1e3742a737507228db09168bf877e66c8330a827c5f3aee37e9",
+  "harness": "opencode",
+  "harness_version": "1.18.30",
+  "provider": "fireworks_ai",
+  "model": "accounts/fireworks/models/glm-5p3-flash",
+  "reward": 1.0,
+  "input_tokens": 139027,
+  "cached_tokens": 116736,
+  "output_tokens": 1205,
+  "cost_usd": 0.007605229999999999,
+  "started_at": "2026-09-18T00:09:39.656591Z",
+  "finished_at": "2026-09-18T00:12:44.650466Z",
+  "source_hashes": {
+    "internal_harbor_result_sha256": "4dea5e73155dc7d16426cd79ba948c32dce2ca509ed214354e0da2eb3149a37b",
+    "internal_raw_trajectory_sha256": "af9d42bc51bc5938920b26786de6bbcf6fc62b7ddcd4eff8c39376922d0a21f2",
+    "published_sanitized_trajectory_sha256": "8261804b59c74e142d323adb42b5bdb55d7113119e79799da77f338b1660378e"
+  },
+  "redactions": [
+    "host-local trial URI",
+    "host-local resolved task paths",
+    "host-local trials directory",
+    "rendered host system-information fingerprint"
+  ]
+}

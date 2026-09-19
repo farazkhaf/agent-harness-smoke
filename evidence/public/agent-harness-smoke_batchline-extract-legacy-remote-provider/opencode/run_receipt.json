@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "published_task_id": "agent-harness-smoke/batchline-extract-legacy-remote-provider",
+  "task_version_source": "suite manifest",
+  "trial_name": "batchline-extract-legacy-remote__7o4KT2r",
+  "task_checksum": "6c123a32c041e388437a9b878646f373692ad0dfb9f28eee4a7c22349b5b7115",
+  "harness": "opencode",
+  "harness_version": "1.18.30",
+  "provider": "fireworks_ai",
+  "model": "accounts/fireworks/models/glm-5p3-flash",
+  "reward": 1.0,
+  "input_tokens": 207203,
+  "cached_tokens": 176128,
+  "output_tokens": 2861,
+  "cost_usd": 0.01165359,
+  "started_at": "2026-09-17T07:09:27.623376Z",
+  "finished_at": "2026-09-17T07:13:07.205156Z",
+  "source_hashes": {
+    "internal_harbor_result_sha256": "d7f58b66576b6b249a570e19a2a5c2b785d95c78a4fec71ae846014633d94f93",
+    "internal_raw_trajectory_sha256": "f8454676c2a1b93412f53f224ebe84a5289982d43d688b7e58f56cf590528b72",
+    "published_sanitized_trajectory_sha256": "0e3da6db6236b052a7947bfe2b96edc2f24858d63e828b1cf5e5d8b049891693"
+  },
+  "redactions": [
+    "host-local trial URI",
+    "host-local resolved task paths",
+    "host-local trials directory",
+    "rendered host system-information fingerprint"
+  ]
+}

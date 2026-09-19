@@ -1,0 +1,14 @@
+{
+  "event_id": "evt_config_000004",
+  "event_type": "service.config_rejected",
+  "occurred_at": "2026-01-01T12:00:00Z",
+  "payload": {
+    "environment": "production",
+    "errors": [
+      "max_retries did not satisfy production policy"
+    ],
+    "service": "thumbnailer"
+  },
+  "schema_version": 1,
+  "source": "batchline.config"
+}

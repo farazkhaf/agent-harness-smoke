@@ -1,0 +1,16 @@
+name: development
+default_timeout_seconds: 120
+required_settings: {}
+overrides:
+  thumbnailer:
+    concurrency: 1
+  notifier:
+    concurrency: 2
+  importer:
+    concurrency: 1
+  indexer:
+    concurrency: 2
+  webhook:
+    concurrency: 2
+  archiver:
+    enabled: false

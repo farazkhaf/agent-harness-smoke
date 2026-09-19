@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "published_task_id": "agent-harness-smoke/batchline-remove-legacy-remote-provider",
+  "task_version_source": "suite manifest",
+  "trial_name": "batchline-remove-legacy-remote-p__JJbn355",
+  "task_checksum": "1c074663cb3bde4507f9b821a9ecda532858fc09d110ac55c0aeb6f3b66d377d",
+  "harness": "mini-swe-agent",
+  "harness_version": "2.4.6",
+  "provider": "fireworks_ai",
+  "model": "accounts/fireworks/models/glm-5p3-flash",
+  "reward": 1.0,
+  "input_tokens": 337441,
+  "cached_tokens": 276480,
+  "output_tokens": 4224,
+  "cost_usd": 0.01955055,
+  "started_at": "2026-09-18T21:41:48.122313Z",
+  "finished_at": "2026-09-18T21:44:48.315983Z",
+  "source_hashes": {
+    "internal_harbor_result_sha256": "ab07e240122ba5569924494fa5fb2bc9cc4db830fe35ba1a88a9b9dfde380270",
+    "internal_raw_trajectory_sha256": "d63b2108e9241bf239b9cc369afd541c19ad2cf37f643c22094dd69aa0dd9e15",
+    "published_sanitized_trajectory_sha256": "436aa21635b44f91f7a668122c8ed194914768c33f1471dcd485164fab04c4c3"
+  },
+  "redactions": [
+    "host-local trial URI",
+    "host-local resolved task paths",
+    "host-local trials directory",
+    "rendered host system-information fingerprint"
+  ]
+}

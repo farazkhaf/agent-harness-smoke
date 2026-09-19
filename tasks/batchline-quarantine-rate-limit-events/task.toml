@@ -1,0 +1,25 @@
+schema_version = "1.4"
+
+[task]
+name = "agent-harness-smoke/batchline-quarantine-rate-limit-events"
+version = "0.1.1"
+description = "Filter a multi-megabyte Batchline JSONL incident archive and write a small quarantine list"
+authors = [{ name = "Faraz Ul Khaf" }]
+keywords = ["coding-agent", "harness", "focused-task", "batchline", "jsonl", "large-file", "search"]
+
+[metadata]
+category = "programming"
+purpose = "focused-task"
+anchor_id = "batchline"
+anchor_version = "0.3"
+network_required_by_task = false
+
+[agent]
+timeout_sec = 300
+
+[verifier]
+timeout_sec = 120
+
+[environment]
+cpus = 2
+memory_mb = 2048

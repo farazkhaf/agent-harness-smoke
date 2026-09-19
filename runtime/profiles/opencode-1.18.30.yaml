@@ -1,0 +1,42 @@
+schema_version: "0.1"
+id: opencode-1.18.30
+agent: opencode
+integration: harness_smoke_agents.preinstalled_opencode:PreinstalledOpenCode
+mode: preinstalled
+version: "1.18.30"
+image: harness-smoke/opencode:1.18.30
+image_digest: null
+
+runtime:
+  base: python:3.12-slim
+  system_packages:
+    - bash
+    - ca-certificates
+    - coreutils
+    - curl
+    - git
+    - build-essential
+  language_runtimes:
+    node: "22"
+    python: "3.12 (base image; not required by OpenCode itself)"
+  package_managers:
+    nvm: "0.40.2"
+    npm: "provided by Node 22 via NVM"
+  agent_packages:
+    - "opencode-ai==1.18.30 (npm global package)"
+
+checks:
+  - "test -s $HOME/.nvm/nvm.sh"
+  - ". $HOME/.nvm/nvm.sh; node --version"
+  - ". $HOME/.nvm/nvm.sh; opencode --version"
+  - "command -v stdbuf"
+
+provider_notes:
+  - "OpenCode/models.dev uses provider id fireworks-ai and FIREWORKS_API_KEY."
+  - "Mini-SWE/LiteLLM uses provider id fireworks_ai; these are not interchangeable model prefixes."
+  - "The wrapper maps Harbor credential resolution to OpenCode's native Fireworks environment variable without rewriting OpenCode's model string."
+
+notes:
+  - The dependency list is descriptive/reproducibility metadata, not a universal task compatibility contract.
+  - This image is OpenCode-specific and shares no agent dependencies with the Mini-SWE image.
+  - The Harbor wrapper changes install/setup and credential alias resolution only; stock OpenCode run/config/ATIF logic is inherited.

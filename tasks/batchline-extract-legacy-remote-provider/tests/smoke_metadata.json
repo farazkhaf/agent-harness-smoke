@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1",
+  "task_id": "batchline-extract-legacy-remote-provider",
+  "task_version": "0.1.0",
+  "task_type": "focused-task",
+  "capability_family": "large-contiguous-move-module-split",
+  "anchor_id": "batchline",
+  "anchor_version": "0.3-r4-seed",
+  "workspace_observer": "git",
+  "expected_edit_globs": [
+    "src/batchline/execution/providers.py",
+    "src/batchline/execution/legacy_remote.py"
+  ],
+  "forbidden_edit_globs": []
+}

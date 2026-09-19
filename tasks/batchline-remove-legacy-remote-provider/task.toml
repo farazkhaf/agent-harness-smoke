@@ -1,0 +1,25 @@
+schema_version = "1.4"
+
+[task]
+name = "agent-harness-smoke/batchline-remove-legacy-remote-provider"
+version = "0.1.1"
+description = "Remove Batchline's substantial deprecated legacy execution-provider implementation"
+authors = [{ name = "Faraz Ul Khaf" }]
+keywords = ["coding-agent", "harness", "focused-task", "batchline", "large-deletion", "source-edit"]
+
+[metadata]
+category = "programming"
+purpose = "focused-task"
+anchor_id = "batchline"
+anchor_version = "0.3"
+network_required_by_task = false
+
+[agent]
+timeout_sec = 300
+
+[verifier]
+timeout_sec = 120
+
+[environment]
+cpus = 2
+memory_mb = 2048

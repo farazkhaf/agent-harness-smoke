@@ -1,0 +1,52 @@
+schema_version = "0.2"
+id = "batchline-focused-v0.1"
+kind = "focused-task"
+description = "Locked Batchline focused-task suite: B1 plus R1-R4"
+repeats = 1
+
+[[tasks]]
+id = "agent-harness-smoke/batchline-submitted-by"
+version = "0.1.0"
+path = "tasks/batchline-submitted-by"
+family = "B1"
+primitive = "coordinated multi-file modification"
+
+[[tasks]]
+id = "agent-harness-smoke/batchline-selective-retry-policies"
+version = "0.1.0"
+path = "tasks/batchline-selective-retry-policies"
+family = "R1"
+primitive = "selective repeated edit"
+
+[[tasks]]
+id = "agent-harness-smoke/batchline-remove-legacy-remote-provider"
+version = "0.1.1"
+path = "tasks/batchline-remove-legacy-remote-provider"
+family = "R2"
+primitive = "large contiguous deletion"
+
+[[tasks]]
+id = "agent-harness-smoke/batchline-quarantine-rate-limit-events"
+version = "0.1.1"
+path = "tasks/batchline-quarantine-rate-limit-events"
+family = "R3"
+primitive = "large line-oriented inspection/filtering"
+
+[[tasks]]
+id = "agent-harness-smoke/batchline-extract-legacy-remote-provider"
+version = "0.1.0"
+path = "tasks/batchline-extract-legacy-remote-provider"
+family = "R4"
+primitive = "large contiguous move/module split"
+
+[[profiles]]
+id = "opencode-1.18.30"
+execution = "preinstalled"
+runtime_profile = "runtime/profiles/opencode-1.18.30.yaml"
+model = "fireworks-ai/accounts/fireworks/models/glm-5p3-flash"
+
+[[profiles]]
+id = "mini-swe-2.4.6"
+execution = "preinstalled"
+runtime_profile = "runtime/profiles/mini-swe-2.4.6.yaml"
+model = "fireworks_ai/accounts/fireworks/models/glm-5p3-flash"

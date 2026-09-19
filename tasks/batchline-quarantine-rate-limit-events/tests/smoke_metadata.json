@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1",
+  "task_id": "batchline-quarantine-rate-limit-events",
+  "task_version": "0.1.1",
+  "task_type": "focused-task",
+  "capability_family": "large-line-oriented-scan",
+  "anchor_id": "batchline",
+  "anchor_version": "0.3",
+  "workspace_observer": "git",
+  "expected_edit_globs": [
+    "operations/quarantine-events.txt"
+  ],
+  "forbidden_edit_globs": [
+    "operations/incident-2026-08-14.jsonl"
+  ]
+}

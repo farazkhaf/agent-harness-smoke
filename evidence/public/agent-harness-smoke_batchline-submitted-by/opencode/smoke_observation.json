@@ -1,0 +1,20 @@
+{
+  "schema_version": "0.1",
+  "observer": "git",
+  "baseline_ref": "80503800f26c83856be7e2c7ff2476a9b5737f33",
+  "changed_files": 4,
+  "changed_paths": [
+    "src/batchline/api/serializers/jobs.py",
+    "src/batchline/cli/render/jobs.py",
+    "src/batchline/jobs/models.py",
+    "src/batchline/jobs/service.py"
+  ],
+  "lines_added": 7,
+  "lines_deleted": 0,
+  "untracked_files": 0,
+  "untracked_paths": [],
+  "unexpected_files_changed": 0,
+  "unexpected_paths": [],
+  "forbidden_files_changed": 0,
+  "forbidden_paths": []
+}

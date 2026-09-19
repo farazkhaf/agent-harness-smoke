@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1",
+  "observer": "git",
+  "baseline_ref": "e81895c8b1556cf9bc8f49c5d47367048a230a69",
+  "changed_files": 9,
+  "changed_paths": [
+    "docs/concepts.md",
+    "src/batchline/api/serializers/jobs.py",
+    "src/batchline/cli/render/jobs.py",
+    "src/batchline/jobs/models.py",
+    "src/batchline/jobs/service.py",
+    "tests/api/test_job_serializers.py",
+    "tests/cli/test_job_rendering.py",
+    "tests/jobs/test_models.py",
+    "tests/jobs/test_service.py"
+  ],
+  "lines_added": 62,
+  "lines_deleted": 1,
+  "untracked_files": 0,
+  "untracked_paths": [],
+  "unexpected_files_changed": 0,
+  "unexpected_paths": [],
+  "forbidden_files_changed": 0,
+  "forbidden_paths": []
+}

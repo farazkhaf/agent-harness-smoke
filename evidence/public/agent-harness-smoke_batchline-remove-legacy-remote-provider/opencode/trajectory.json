@@ -1,0 +1,586 @@
+{
+  "schema_version": "ATIF-v1.7",
+  "session_id": "ses_f4997477bffeesmU2hKIWptu7s",
+  "agent": {
+    "name": "opencode",
+    "version": "1.18.30",
+    "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash"
+  },
+  "steps": [
+    {
+      "step_id": 1,
+      "source": "user",
+      "message": "# Remove the legacy remote execution provider\n\nBatchline no longer supports the deprecated `legacy_remote` execution provider.\n\nRemove the `LegacyRemoteProvider` implementation from `src/batchline/execution/providers.py`, remove `legacy_remote` from that module's provider registry, and remove the stale test coverage that exists only for that legacy provider.\n\nAfter the change:\n\n- `provider_names()` must no longer include `legacy_remote`.\n- `get_provider(\"legacy_remote\")` must reject the name.\n- all current execution providers must continue to work unchanged.\n- the repository test suite must pass without legacy compatibility tests.\n\nDo not replace the legacy provider with a stub or compatibility alias.\n"
+    },
+    {
+      "step_id": 2,
+      "timestamp": "2026-09-18T21:25:50.281000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "reasoning_content": "Let me start by exploring the repository structure to understand the codebase.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-b908b47161955961",
+          "function_name": "bash",
+          "arguments": {
+            "command": "git status && git log --oneline -5"
+          }
+        },
+        {
+          "tool_call_id": "chatcmpl-tool-96d968fad661950a",
+          "function_name": "read",
+          "arguments": {
+            "filePath": "/app/src/batchline/execution/providers.py"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-b908b47161955961",
+            "content": "On branch master\nnothing to commit, working tree clean\n9359cef baseline\n"
+          },
+          {
+            "source_call_id": "chatcmpl-tool-96d968fad661950a",
+            "content": "<path>/app/src/batchline/execution/providers.py</path>\n<type>file</type>\n<content>\n1: \"\"\"Execution-provider planning.\n2: \n3: Batchline does not launch external infrastructure itself. Providers translate a\n4: job execution request into a deterministic local execution plan that a caller\n5: can inspect or execute. The module intentionally retains the older\n6: ``legacy_remote`` compatibility provider while users migrate to current local\n7: and container-oriented plans.\n8: \"\"\"\n9: \n10: from __future__ import annotations\n11: \n12: from dataclasses import dataclass, field\n13: from pathlib import Path\n14: import shlex\n15: from typing import Iterable, Mapping, Protocol, Sequence\n16: \n17: \n18: @dataclass(frozen=True)\n19: class ExecutionRequest:\n20:     job_id: str\n21:     kind: str\n22:     queue: str\n23:     command: tuple[str, ...]\n24:     working_directory: str = \"/app\"\n25:     environment: Mapping[str, str] = field(default_factory=dict)\n26:     timeout_seconds: int = 300\n27:     max_output_kb: int = 1024\n28:     trace_id: str | None = None\n29: \n30:     def validate(self) -> None:\n31:         if not self.job_id.strip():\n32:             raise ValueError(\"job_id cannot be empty\")\n33:         if not self.kind.strip():\n34:             raise ValueError(\"kind cannot be empty\")\n35:         if not self.queue.strip():\n36:             raise ValueError(\"queue cannot be empty\")\n37:         if not self.command:\n38:             raise ValueError(\"command cannot be empty\")\n39:         if self.timeout_seconds < 1:\n40:             raise ValueError(\"timeout_seconds must be positive\")\n41:         if self.max_output_kb < 1:\n42:             raise ValueError(\"max_output_kb must be positive\")\n43: \n44: \n45: @dataclass(frozen=True)\n46: class ExecutionPlan:\n47:     provider: str\n48:     argv: tuple[str, ...]\n49:     cwd: str\n50:     environment: Mapping[str, str]\n51:     timeout_seconds: int\n52:     max_output_kb: int\n53:     labels: Mapping[str, str] = field(default_factory=dict)\n54: \n55:     def shell_command(self) -> str:\n56:         return \" \".join(shlex.quote(part) for part in self.argv)\n57: \n58: \n59: class ExecutionProvider(Protocol):\n60:     name: str\n61: \n62:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n63:         ...\n64: \n65: \n66: def _clean_environment(values: Mapping[str, str]) -> dict[str, str]:\n67:     cleaned: dict[str, str] = {}\n68:     for key, value in values.items():\n69:         name = str(key).strip()\n70:         if not name or \"=\" in name or \"\\x00\" in name:\n71:             raise ValueError(f\"invalid environment variable name: {key!r}\")\n72:         text = str(value)\n73:         if \"\\x00\" in text:\n74:             raise ValueError(f\"environment variable {name} contains a NUL byte\")\n75:         cleaned[name] = text\n76:     return cleaned\n77: \n78: \n79: def _base_labels(request: ExecutionRequest) -> dict[str, str]:\n80:     labels = {\n81:         \"batchline.job_id\": request.job_id,\n82:         \"batchline.kind\": request.kind,\n83:         \"batchline.queue\": request.queue,\n84:     }\n85:     if request.trace_id:\n86:         labels[\"batchline.trace_id\"] = request.trace_id\n87:     return labels\n88: \n89: \n90: def _safe_working_directory(value: str) -> str:\n91:     path = Path(value)\n92:     if not path.is_absolute():\n93:         raise ValueError(\"working_directory must be absolute\")\n94:     return str(path)\n95: \n96: \n97: class LocalProcessProvider:\n98:     \"\"\"Plan direct local process execution.\"\"\"\n99: \n100:     name = \"local\"\n101: \n102:     def __init__(self, *, python_unbuffered: bool = True, inherit_path: bool = True):\n103:         self.python_unbuffered = python_unbuffered\n104:         self.inherit_path = inherit_path\n105: \n106:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n107:         request.validate()\n108:         environment = _clean_environment(request.environment)\n109:         if self.python_unbuffered:\n110:             environment.setdefault(\"PYTHONUNBUFFERED\", \"1\")\n111:         if not self.inherit_path:\n112:             environment.setdefault(\"PATH\", \"/usr/local/bin:/usr/bin:/bin\")\n113:         labels = _base_labels(request)\n114:         labels[\"batchline.execution_mode\"] = \"local-process\"\n115:         return ExecutionPlan(\n116:             provider=self.name,\n117:             argv=tuple(request.command),\n118:             cwd=_safe_working_directory(request.working_directory),\n119:             environment=environment,\n120:             timeout_seconds=request.timeout_seconds,\n121:             max_output_kb=request.max_output_kb,\n122:             labels=labels,\n123:         )\n124: \n125:     def describe(self) -> str:\n126:         return \"direct local process execution\"\n127: \n128: \n129: class ThreadPoolProvider:\n130:     \"\"\"Plan a local command for execution by a shared worker pool.\"\"\"\n131: \n132:     name = \"thread_pool\"\n133: \n134:     def __init__(self, *, pool_name: str = \"default\", concurrency: int = 4):\n135:         if not pool_name.strip():\n136:             raise ValueError(\"pool_name cannot be empty\")\n137:         if concurrency < 1:\n138:             raise ValueError(\"concurrency must be positive\")\n139:         self.pool_name = pool_name\n140:         self.concurrency = concurrency\n141: \n142:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n143:         request.validate()\n144:         environment = _clean_environment(request.environment)\n145:         environment[\"BATCHLINE_POOL\"] = self.pool_name\n146:         environment[\"BATCHLINE_POOL_CONCURRENCY\"] = str(self.concurrency)\n147:         labels = _base_labels(request)\n148:         labels[\"batchline.execution_mode\"] = \"thread-pool\"\n149:         labels[\"batchline.pool\"] = self.pool_name\n150:         return ExecutionPlan(\n151:             provider=self.name,\n152:             argv=tuple(request.command),\n153:             cwd=_safe_working_directory(request.working_directory),\n154:             environment=environment,\n155:             timeout_seconds=request.timeout_seconds,\n156:             max_output_kb=request.max_output_kb,\n157:             labels=labels,\n158:         )\n159: \n160:     def describe(self) -> str:\n161:         return f\"shared local pool {self.pool_name} ({self.concurrency} workers)\"\n162: \n163: \n164: class ContainerCommandProvider:\n165:     \"\"\"Plan a deterministic container CLI invocation.\n166: \n167:     The provider emits a command plan only; it does not require Docker or another\n168:     container runtime to be installed in the task environment.\n169:     \"\"\"\n170: \n171:     name = \"container\"\n172: \n173:     def __init__(\n174:         self,\n175:         *,\n176:         image: str = \"batchline-worker:stable\",\n177:         runtime_command: Sequence[str] = (\"docker\", \"run\", \"--rm\"),\n178:         network: str = \"none\",\n179:         read_only: bool = True,\n180:     ):\n181:         if not image.strip():\n182:             raise ValueError(\"image cannot be empty\")\n183:         if not runtime_command:\n184:             raise ValueError(\"runtime_command cannot be empty\")\n185:         self.image = image\n186:         self.runtime_command = tuple(runtime_command)\n187:         self.network = network\n188:         self.read_only = read_only\n189: \n190:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n191:         request.validate()\n192:         environment = _clean_environment(request.environment)\n193:         argv: list[str] = list(self.runtime_command)\n194:         argv.extend([\"--network\", self.network])\n195:         if self.read_only:\n196:             argv.append(\"--read-only\")\n197:         argv.extend([\"--workdir\", request.working_directory])\n198:         for key in sorted(environment):\n199:             argv.extend([\"--env\", f\"{key}={environment[key]}\"])\n200:         labels = _base_labels(request)\n201:         for key in sorted(labels):\n202:             argv.extend([\"--label\", f\"{key}={labels[key]}\"])\n203:         argv.append(self.image)\n204:         argv.extend(request.command)\n205:         labels[\"batchline.execution_mode\"] = \"container-command\"\n206:         labels[\"batchline.image\"] = self.image\n207:         return ExecutionPlan(\n208:             provider=self.name,\n209:             argv=tuple(argv),\n210:             cwd=_safe_working_directory(request.working_directory),\n211:             environment={},\n212:             timeout_seconds=request.timeout_seconds,\n213:             max_output_kb=request.max_output_kb,\n214:             labels=labels,\n215:         )\n216: \n217:     def describe(self) -> str:\n218:         return f\"container command using {self.image}\"\n219: \n220: \n221: class SandboxProcessProvider:\n222:     \"\"\"Plan a local process with a constrained environment and resource labels.\"\"\"\n223: \n224:     name = \"sandbox\"\n225: \n226:     def __init__(\n227:         self,\n228:         *,\n229:         sandbox_root: str = \"/tmp/batchline-sandboxes\",\n230:         profile: str = \"default\",\n231:         network_access: bool = False,\n232:         writable_tmp: bool = True,\n233:     ):\n234:         if not sandbox_root.startswith(\"/\"):\n235:             raise ValueError(\"sandbox_root must be absolute\")\n236:         if not profile.strip():\n237:             raise ValueError(\"profile cannot be empty\")\n238:         self.sandbox_root = sandbox_root.rstrip(\"/\")\n239:         self.profile = profile\n240:         self.network_access = network_access\n241:         self.writable_tmp = writable_tmp\n242: \n243:     def sandbox_directory(self, request: ExecutionRequest) -> str:\n244:         request.validate()\n245:         return f\"{self.sandbox_root}/{request.job_id}\"\n246: \n247:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n248:         request.validate()\n249:         environment = _clean_environment(request.environment)\n250:         environment[\"BATCHLINE_SANDBOX_PROFILE\"] = self.profile\n251:         environment[\"BATCHLINE_SANDBOX_ROOT\"] = self.sandbox_directory(request)\n252:         environment[\"BATCHLINE_NETWORK_ACCESS\"] = \"1\" if self.network_access else \"0\"\n253:         environment[\"BATCHLINE_WRITABLE_TMP\"] = \"1\" if self.writable_tmp else \"0\"\n254:         labels = _base_labels(request)\n255:         labels[\"batchline.execution_mode\"] = \"sandbox-process\"\n256:         labels[\"batchline.sandbox_profile\"] = self.profile\n257:         labels[\"batchline.network_access\"] = \"enabled\" if self.network_access else \"disabled\"\n258:         return ExecutionPlan(\n259:             provider=self.name,\n260:             argv=tuple(request.command),\n261:             cwd=_safe_working_directory(request.working_directory),\n262:             environment=environment,\n263:             timeout_seconds=request.timeout_seconds,\n264:             max_output_kb=request.max_output_kb,\n265:             labels=labels,\n266:         )\n267: \n268:     def describe(self) -> str:\n269:         network = \"networked\" if self.network_access else \"offline\"\n270:         return f\"{network} sandbox profile {self.profile}\"\n271: \n272: \n273: class BatchFileProvider:\n274:     \"\"\"Plan execution through a local batch command-file runner.\"\"\"\n275: \n276:     name = \"batch_file\"\n277: \n278:     def __init__(\n279:         self,\n280:         *,\n281:         runner_command: Sequence[str] = (\"batchline-batch-runner\",),\n282:         spool_directory: str = \"/var/tmp/batchline-spool\",\n283:         retain_command_file: bool = False,\n284:     ):\n285:         if not runner_command:\n286:             raise ValueError(\"runner_command cannot be empty\")\n287:         if not spool_directory.startswith(\"/\"):\n288:             raise ValueError(\"spool_directory must be absolute\")\n289:         self.runner_command = tuple(runner_command)\n290:         self.spool_directory = spool_directory.rstrip(\"/\")\n291:         self.retain_command_file = retain_command_file\n292: \n293:     def command_file(self, request: ExecutionRequest) -> str:\n294:         request.validate()\n295:         return f\"{self.spool_directory}/{request.job_id}.cmd\"\n296: \n297:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n298:         request.validate()\n299:         environment = _clean_environment(request.environment)\n300:         command_file = self.command_file(request)\n301:         argv = list(self.runner_command)\n302:         argv.extend([\"--command-file\", command_file])\n303:         argv.extend([\"--cwd\", request.working_directory])\n304:         argv.extend([\"--timeout\", str(request.timeout_seconds)])\n305:         argv.extend([\"--max-output-kb\", str(request.max_output_kb)])\n306:         if self.retain_command_file:\n307:             argv.append(\"--retain-command-file\")\n308:         else:\n309:             argv.append(\"--delete-command-file\")\n310:         for key in sorted(environment):\n311:             argv.extend([\"--env\", f\"{key}={environment[key]}\"])\n312:         argv.append(\"--\")\n313:         argv.extend(request.command)\n314:         labels = _base_labels(request)\n315:         labels[\"batchline.execution_mode\"] = \"batch-file\"\n316:         labels[\"batchline.command_file\"] = command_file\n317:         return ExecutionPlan(\n318:             provider=self.name,\n319:             argv=tuple(argv),\n320:             cwd=_safe_working_directory(request.working_directory),\n321:             environment={},\n322:             timeout_seconds=request.timeout_seconds,\n323:             max_output_kb=request.max_output_kb,\n324:             labels=labels,\n325:         )\n326: \n327:     def describe(self) -> str:\n328:         return f\"local batch command-file runner in {self.spool_directory}\"\n329: \n330: \n331: class ContainerPoolProvider:\n332:     \"\"\"Plan a command for a named pre-warmed container worker pool.\"\"\"\n333: \n334:     name = \"container_pool\"\n335: \n336:     def __init__(\n337:         self,\n338:         *,\n339:         pool: str = \"default\",\n340:         dispatcher_command: Sequence[str] = (\"batchline-container-dispatch\",),\n341:         isolation: str = \"job\",\n342:     ):\n343:         if not pool.strip():\n344:             raise ValueError(\"pool cannot be empty\")\n345:         if not dispatcher_command:\n346:             raise ValueError(\"dispatcher_command cannot be empty\")\n347:         if isolation not in {\"job\", \"queue\"}:\n348:             raise ValueError(\"isolation must be job or queue\")\n349:         self.pool = pool\n350:         self.dispatcher_command = tuple(dispatcher_command)\n351:         self.isolation = isolation\n352: \n353:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n354:         request.validate()\n355:         environment = _clean_environment(request.environment)\n356:         argv = list(self.dispatcher_command)\n357:         argv.extend([\"--pool\", self.pool])\n358:         argv.extend([\"--isolation\", self.isolation])\n359:         argv.extend([\"--job-id\", request.job_id])\n360:         argv.extend([\"--queue\", request.queue])\n361:         argv.extend([\"--timeout\", str(request.timeout_seconds)])\n362:         for key in sorted(environment):\n363:             argv.extend([\"--env\", f\"{key}={environment[key]}\"])\n364:         argv.append(\"--\")\n365:         argv.extend(request.command)\n366:         labels = _base_labels(request)\n367:         labels[\"batchline.execution_mode\"] = \"container-pool\"\n368:         labels[\"batchline.container_pool\"] = self.pool\n369:         labels[\"batchline.pool_isolation\"] = self.isolation\n370:         return ExecutionPlan(\n371:             provider=self.name,\n372:             argv=tuple(argv),\n373:             cwd=_safe_working_directory(request.working_directory),\n374:             environment={},\n375:             timeout_seconds=request.timeout_seconds,\n376:             max_output_kb=request.max_output_kb,\n377:             labels=labels,\n378:         )\n379: \n380:     def describe(self) -> str:\n381:         return f\"pre-warmed container pool {self.pool} ({self.isolation} isolation)\"\n382: \n383: \n384: class LegacyRemoteProvider:\n385:     \"\"\"Compatibility planner for Batchline's retired remote-runner API.\n386: \n387:     This adapter remains for installations that still persist v1 remote runner\n388:     settings. It converts the old option vocabulary into a deterministic command\n389:     invocation. New deployments should use ``container`` or ``local`` instead.\n390:     \"\"\"\n391: \n392:     name = \"legacy_remote\"\n393: \n394:     def __init__(\n395:         self,\n396:         *,\n397:         endpoint: str = \"https://runner.invalid/v1\",\n398:         project: str = \"default\",\n399:         region: str = \"local\",\n400:         runner_command: Sequence[str] = (\"batchline-remote-runner\",),\n401:         token_env: str = \"BATCHLINE_REMOTE_TOKEN\",\n402:         connect_timeout_seconds: int = 10,\n403:         poll_interval_seconds: int = 2,\n404:         upload_chunk_kb: int = 512,\n405:         download_chunk_kb: int = 512,\n406:         preserve_workspace: bool = False,\n407:         verify_tls: bool = True,\n408:     ):\n409:         if not endpoint.strip():\n410:             raise ValueError(\"endpoint cannot be empty\")\n411:         if not project.strip():\n412:             raise ValueError(\"project cannot be empty\")\n413:         if not region.strip():\n414:             raise ValueError(\"region cannot be empty\")\n415:         if not runner_command:\n416:             raise ValueError(\"runner_command cannot be empty\")\n417:         if connect_timeout_seconds < 1:\n418:             raise ValueError(\"connect_timeout_seconds must be positive\")\n419:         if poll_interval_seconds < 1:\n420:             raise ValueError(\"poll_interval_seconds must be positive\")\n421:         if upload_chunk_kb < 1 or download_chunk_kb < 1:\n422:             raise ValueError(\"chunk sizes must be positive\")\n423:         self.endpoint = endpoint.rstrip(\"/\")\n424:         self.project = project\n425:         self.region = region\n426:         self.runner_command = tuple(runner_command)\n427:         self.token_env = token_env\n428:         self.connect_timeout_seconds = connect_timeout_seconds\n429:         self.poll_interval_seconds = poll_interval_seconds\n430:         self.upload_chunk_kb = upload_chunk_kb\n431:         self.download_chunk_kb = download_chunk_kb\n432:         self.preserve_workspace = preserve_workspace\n433:         self.verify_tls = verify_tls\n434: \n435:     def _base_argv(self) -> list[str]:\n436:         argv = list(self.runner_command)\n437:         argv.extend([\"submit\", \"--endpoint\", self.endpoint])\n438:         argv.extend([\"--project\", self.project])\n439:         argv.extend([\"--region\", self.region])\n440:         argv.extend([\"--connect-timeout\", str(self.connect_timeout_seconds)])\n441:         argv.extend([\"--poll-interval\", str(self.poll_interval_seconds)])\n442:         return argv\n443: \n444:     def _append_workspace_flags(self, argv: list[str], request: ExecutionRequest) -> None:\n445:         argv.extend([\"--working-directory\", request.working_directory])\n446:         argv.extend([\"--upload-chunk-kb\", str(self.upload_chunk_kb)])\n447:         argv.extend([\"--download-chunk-kb\", str(self.download_chunk_kb)])\n448:         if self.preserve_workspace:\n449:             argv.append(\"--preserve-workspace\")\n450:         else:\n451:             argv.append(\"--discard-workspace\")\n452: \n453:     def _append_transport_flags(self, argv: list[str]) -> None:\n454:         if self.verify_tls:\n455:             argv.append(\"--verify-tls\")\n456:         else:\n457:             argv.append(\"--no-verify-tls\")\n458:         argv.extend([\"--token-env\", self.token_env])\n459: \n460:     def _append_limits(self, argv: list[str], request: ExecutionRequest) -> None:\n461:         argv.extend([\"--timeout-seconds\", str(request.timeout_seconds)])\n462:         argv.extend([\"--max-output-kb\", str(request.max_output_kb)])\n463: \n464:     def _append_identity(self, argv: list[str], request: ExecutionRequest) -> None:\n465:         argv.extend([\"--job-id\", request.job_id])\n466:         argv.extend([\"--kind\", request.kind])\n467:         argv.extend([\"--queue\", request.queue])\n468:         if request.trace_id:\n469:             argv.extend([\"--trace-id\", request.trace_id])\n470: \n471:     def _append_environment(self, argv: list[str], environment: Mapping[str, str]) -> None:\n472:         for key in sorted(environment):\n473:             argv.extend([\"--env\", f\"{key}={environment[key]}\"])\n474: \n475:     def _append_command(self, argv: list[str], command: Iterable[str]) -> None:\n476:         argv.append(\"--\")\n477:         argv.extend(command)\n478: \n479:     def _legacy_environment(self, request: ExecutionRequest) -> dict[str, str]:\n480:         environment = _clean_environment(request.environment)\n481:         environment.setdefault(\"BATCHLINE_LEGACY_REMOTE\", \"1\")\n482:         environment.setdefault(\"BATCHLINE_REMOTE_PROJECT\", self.project)\n483:         environment.setdefault(\"BATCHLINE_REMOTE_REGION\", self.region)\n484:         return environment\n485: \n486:     def _legacy_labels(self, request: ExecutionRequest) -> dict[str, str]:\n487:         labels = _base_labels(request)\n488:         labels[\"batchline.execution_mode\"] = \"legacy-remote\"\n489:         labels[\"batchline.remote_project\"] = self.project\n490:         labels[\"batchline.remote_region\"] = self.region\n491:         labels[\"batchline.remote_endpoint\"] = self.endpoint\n492:         return labels\n493: \n494:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n495:         request.validate()\n496:         environment = self._legacy_environment(request)\n497:         argv = self._base_argv()\n498:         self._append_workspace_flags(argv, request)\n499:         self._append_transport_flags(argv)\n500:         self._append_limits(argv, request)\n501:         self._append_identity(argv, request)\n502:         self._append_environment(argv, environment)\n503:         self._append_command(argv, request.command)\n504:         return ExecutionPlan(\n505:             provider=self.name,\n506:             argv=tuple(argv),\n507:             cwd=_safe_working_directory(request.working_directory),\n508:             environment={},\n509:             timeout_seconds=request.timeout_seconds + self.connect_timeout_seconds,\n510:             max_output_kb=request.max_output_kb,\n511:             labels=self._legacy_labels(request),\n512:         )\n513: \n514:     def describe(self) -> str:\n515:         return f\"legacy remote runner {self.project}@{self.region} via {self.endpoint}\"\n516: \n517:     def compatibility_environment(self, request: ExecutionRequest) -> Mapping[str, str]:\n518:         \"\"\"Expose the normalized legacy environment for migration diagnostics.\"\"\"\n519:         request.validate()\n520:         return self._legacy_environment(request)\n521: \n522:     def compatibility_flags(self, request: ExecutionRequest) -> tuple[str, ...]:\n523:         \"\"\"Expose remote-runner flags without the final user command.\"\"\"\n524:         request.validate()\n525:         argv = self._base_argv()\n526:         self._append_workspace_flags(argv, request)\n527:         self._append_transport_flags(argv)\n528:         self._append_limits(argv, request)\n529:         self._append_identity(argv, request)\n530:         self._append_environment(argv, self._legacy_environment(request))\n531:         return tuple(argv)\n532: \n533:     def migration_hint(self) -> str:\n534:         return (\n535:             \"legacy_remote is deprecated; prefer container for isolated workers \"\n536:             \"or local/thread_pool for local execution\"\n537:         )\n538: \n539:     def normalized_endpoint(self) -> str:\n540:         return self.endpoint\n541: \n542:     def connection_policy(self) -> Mapping[str, object]:\n543:         return {\n544:             \"verify_tls\": self.verify_tls,\n545:             \"connect_timeout_seconds\": self.connect_timeout_seconds,\n546:             \"poll_interval_seconds\": self.poll_interval_seconds,\n547:         }\n548: \n549:     def transfer_policy(self) -> Mapping[str, object]:\n550:         return {\n551:             \"upload_chunk_kb\": self.upload_chunk_kb,\n552:             \"download_chunk_kb\": self.download_chunk_kb,\n553:             \"preserve_workspace\": self.preserve_workspace,\n554:         }\n555: \n556:     def identity_policy(self) -> Mapping[str, str]:\n557:         return {\n558:             \"project\": self.project,\n559:             \"region\": self.region,\n560:             \"token_env\": self.token_env,\n561:         }\n562: \n563:     def redacted_settings(self) -> Mapping[str, object]:\n564:         return {\n565:             \"endpoint\": self.endpoint,\n566:             \"project\": self.project,\n567:             \"region\": self.region,\n568:             \"runner_command\": self.runner_command,\n569:             \"token_env\": self.token_env,\n570:             \"connect_timeout_seconds\": self.connect_timeout_seconds,\n571:             \"poll_interval_seconds\": self.poll_interval_seconds,\n572:             \"upload_chunk_kb\": self.upload_chunk_kb,\n573:             \"download_chunk_kb\": self.download_chunk_kb,\n574:             \"preserve_workspace\": self.preserve_workspace,\n575:             \"verify_tls\": self.verify_tls,\n576:         }\n577: \n578:     def with_region(self, region: str) -> \"LegacyRemoteProvider\":\n579:         return LegacyRemoteProvider(\n580:             endpoint=self.endpoint,\n581:             project=self.project,\n582:             region=region,\n583:             runner_command=self.runner_command,\n584:             token_env=self.token_env,\n585:             connect_timeout_seconds=self.connect_timeout_seconds,\n586:             poll_interval_seconds=self.poll_interval_seconds,\n587:             upload_chunk_kb=self.upload_chunk_kb,\n588:             download_chunk_kb=self.download_chunk_kb,\n589:             preserve_workspace=self.preserve_workspace,\n590:             verify_tls=self.verify_tls,\n591:         )\n592: \n593:     def with_project(self, project: str) -> \"LegacyRemoteProvider\":\n594:         return LegacyRemoteProvider(\n595:             endpoint=self.endpoint,\n596:             project=project,\n597:             region=self.region,\n598:             runner_command=self.runner_command,\n599:             token_env=self.token_env,\n600:             connect_timeout_seconds=self.connect_timeout_seconds,\n601:             poll_interval_seconds=self.poll_interval_seconds,\n602:             upload_chunk_kb=self.upload_chunk_kb,\n603:             download_chunk_kb=self.download_chunk_kb,\n604:             preserve_workspace=self.preserve_workspace,\n605:             verify_tls=self.verify_tls,\n606:         )\n607: \n608:     def with_endpoint(self, endpoint: str) -> \"LegacyRemoteProvider\":\n609:         return LegacyRemoteProvider(\n610:             endpoint=endpoint,\n611:             project=self.project,\n612:             region=self.region,\n613:             runner_command=self.runner_command,\n614:             token_env=self.token_env,\n615:             connect_timeout_seconds=self.connect_timeout_seconds,\n616:             poll_interval_seconds=self.poll_interval_seconds,\n617:             upload_chunk_kb=self.upload_chunk_kb,\n618:             download_chunk_kb=self.download_chunk_kb,\n619:             preserve_workspace=self.preserve_workspace,\n620:             verify_tls=self.verify_tls,\n621:         )\n622: \n623: \n624: \n625: _PROVIDER_FACTORIES = {\n626:     \"local\": LocalProcessProvider,\n627:     \"thread_pool\": ThreadPoolProvider,\n628:     \"container\": ContainerCommandProvider,\n629:     \"sandbox\": SandboxProcessProvider,\n630:     \"batch_file\": BatchFileProvider,\n631:     \"container_pool\": ContainerPoolProvider,\n632:     \"legacy_remote\": LegacyRemoteProvider,\n633: }\n634: \n635: \n636: def provider_names() -> tuple[str, ...]:\n637:     return tuple(sorted(_PROVIDER_FACTORIES))\n638: \n639: \n640: def get_provider(name: str) -> ExecutionProvider:\n641:     try:\n642:         factory = _PROVIDER_FACTORIES[name]\n643:     except KeyError as exc:\n644:         raise KeyError(f\"unknown execution provider: {name}\") from exc\n645:     return factory()\n\n(End of file - total 645 lines)\n</content>"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 7185,
+        "completion_tokens": 37,
+        "cost_usd": 0.00110325,
+        "extra": {
+          "reasoning_tokens": 14
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 3,
+      "timestamp": "2026-09-18T21:25:58.540000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "Now let me find the legacy provider's tests:",
+      "reasoning_content": "Now let me find the tests related to the legacy provider.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-8389abdf7c230707",
+          "function_name": "grep",
+          "arguments": {
+            "pattern": "legacy_remote|LegacyRemoteProvider"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-8389abdf7c230707",
+            "content": "Found 15 matches\n/app/tests/execution/test_providers.py:\n  Line 31: def test_legacy_remote_provider_remains_compatible_for_v03():\n\n  Line 32:     provider = get_provider(\"legacy_remote\")\n\n  Line 34:     assert plan.provider == \"legacy_remote\"\n\n  Line 37:     assert provider.migration_hint().startswith(\"legacy_remote is deprecated\")\n\n\n/app/src/batchline/execution/providers.py:\n  Line 6: ``legacy_remote`` compatibility provider while users migrate to current local\n\n  Line 384: class LegacyRemoteProvider:\n\n  Line 392:     name = \"legacy_remote\"\n\n  Line 535:             \"legacy_remote is deprecated; prefer container for isolated workers \"\n\n  Line 578:     def with_region(self, region: str) -> \"LegacyRemoteProvider\":\n\n  Line 579:         return LegacyRemoteProvider(\n\n  Line 593:     def with_project(self, project: str) -> \"LegacyRemoteProvider\":\n\n  Line 594:         return LegacyRemoteProvider(\n\n  Line 608:     def with_endpoint(self, endpoint: str) -> \"LegacyRemoteProvider\":\n\n  Line 609:         return LegacyRemoteProvider(\n\n  Line 632:     \"legacy_remote\": LegacyRemoteProvider,\n"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 13957,
+        "completion_tokens": 26,
+        "cached_tokens": 6144,
+        "cost_usd": 0.00137527,
+        "extra": {
+          "reasoning_tokens": 12
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 4,
+      "timestamp": "2026-09-18T21:26:06.948000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-9cdda43613411258",
+          "function_name": "read",
+          "arguments": {
+            "filePath": "/app/tests/execution/test_providers.py"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-9cdda43613411258",
+            "content": "<path>/app/tests/execution/test_providers.py</path>\n<type>file</type>\n<content>\n1: import pytest\n2: \n3: from batchline.execution import ExecutionRequest, get_provider, provider_names\n4: \n5: \n6: def _request():\n7:     return ExecutionRequest(\n8:         job_id=\"job-123\",\n9:         kind=\"thumbnail\",\n10:         queue=\"media\",\n11:         command=(\"python\", \"worker.py\"),\n12:         environment={\"MODE\": \"test\"},\n13:         trace_id=\"trace-9\",\n14:     )\n15: \n16: \n17: def test_current_provider_plans_are_available():\n18:     assert {\"local\", \"thread_pool\", \"container\", \"sandbox\", \"batch_file\", \"container_pool\"}.issubset(provider_names())\n19:     local = get_provider(\"local\").plan(_request())\n20:     assert local.argv == (\"python\", \"worker.py\")\n21:     assert local.labels[\"batchline.job_id\"] == \"job-123\"\n22: \n23: \n24: def test_container_provider_builds_deterministic_command():\n25:     plan = get_provider(\"container\").plan(_request())\n26:     assert plan.argv[:3] == (\"docker\", \"run\", \"--rm\")\n27:     assert \"batchline-worker:stable\" in plan.argv\n28:     assert plan.argv[-2:] == (\"python\", \"worker.py\")\n29: \n30: \n31: def test_legacy_remote_provider_remains_compatible_for_v03():\n32:     provider = get_provider(\"legacy_remote\")\n33:     plan = provider.plan(_request())\n34:     assert plan.provider == \"legacy_remote\"\n35:     assert \"--project\" in plan.argv\n36:     assert \"default\" in plan.argv\n37:     assert provider.migration_hint().startswith(\"legacy_remote is deprecated\")\n38: \n39: \n40: def test_unknown_provider_is_rejected():\n41:     with pytest.raises(KeyError):\n42:         get_provider(\"missing\")\n\n(End of file - total 42 lines)\n</content>"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 14266,
+        "completion_tokens": 18,
+        "cached_tokens": 12288,
+        "cost_usd": 0.00067434
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 5,
+      "timestamp": "2026-09-18T21:26:10.745000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "reasoning_content": "Now I have a clear picture. I need to:\n\n1. Remove the `LegacyRemoteProvider` class from `src/batchline/execution/providers.py` (lines 384-622)\n2. Remove `\"legacy_remote\": LegacyRemoteProvider,` from `_PROVIDER_FACTORIES` (line 632)\n3. Update the module docstring which mentions `legacy_remote` (lines 5-7)\n4. Remove the test `test_legacy_remote_provider_remains_compatible_for_v03` from tests\n5. Run the test suite\n\nLet me check the test file for legacy_remote in the test on line 18: it lists current providers - `{\"local\", \"thread_pool\", \"container\", \"sandbox\", \"batch_file\", \"container_pool\"}` - which doesn't include legacy_remote, so that's fine.\n\nAlso let me check whether there are any other places that may reference `legacy_remote` or `LegacyRemoteProvider` \u2014 the grep found all 15 matches, only in these two files. Good.\n\nLet me also check the `src/batchline/execution/__init__.py` to see what's exported.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-91cc32220a4b7250",
+          "function_name": "read",
+          "arguments": {
+            "filePath": "/app/src/batchline/execution/__init__.py"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-91cc32220a4b7250",
+            "content": "<path>/app/src/batchline/execution/__init__.py</path>\n<type>file</type>\n<content>\n1: \"\"\"Execution-provider planning primitives.\"\"\"\n2: \n3: from .providers import (\n4:     BatchFileProvider,\n5:     ContainerCommandProvider,\n6:     ContainerPoolProvider,\n7:     ExecutionPlan,\n8:     ExecutionRequest,\n9:     LocalProcessProvider,\n10:     SandboxProcessProvider,\n11:     ThreadPoolProvider,\n12:     get_provider,\n13:     provider_names,\n14: )\n15: \n16: __all__ = [\n17:     \"BatchFileProvider\",\n18:     \"ContainerCommandProvider\",\n19:     \"ContainerPoolProvider\",\n20:     \"ExecutionPlan\",\n21:     \"ExecutionRequest\",\n22:     \"LocalProcessProvider\",\n23:     \"SandboxProcessProvider\",\n24:     \"ThreadPoolProvider\",\n25:     \"get_provider\",\n26:     \"provider_names\",\n27: ]\n\n(End of file - total 27 lines)\n</content>"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 14729,
+        "completion_tokens": 21,
+        "cached_tokens": 12288,
+        "cost_usd": 0.00086329,
+        "extra": {
+          "reasoning_tokens": 236
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 6,
+      "timestamp": "2026-09-18T21:26:24.164000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "The `__init__.py` doesn't export the legacy class, so I only need to edit `providers.py` and the test file:",
+      "reasoning_content": "The `__init__.py` doesn't export `LegacyRemoteProvider`, so no changes needed there. Now let me make the edits:\n\n1. Update the module docstring (remove the legacy_remote mention)\n2. Remove the `LegacyRemoteProvider` class (lines 384-622)\n3. Remove from `_PROVIDER_FACTORIES`\n4. Remove the legacy test",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-9f5aa98b6a0a324b",
+          "function_name": "edit",
+          "arguments": {
+            "filePath": "/app/src/batchline/execution/providers.py",
+            "newString": "\"\"\"Execution-provider planning.\n\nBatchline does not launch external infrastructure itself. Providers translate a\njob execution request into a deterministic local execution plan that a caller\ncan inspect or execute.\n\"\"\"",
+            "oldString": "\"\"\"Execution-provider planning.\n\nBatchline does not launch external infrastructure itself. Providers translate a\njob execution request into a deterministic local execution plan that a caller\ncan inspect or execute. The module intentionally retains the older\n``legacy_remote`` compatibility provider while users migrate to current local\nand container-oriented plans.\n\"\"\""
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-9f5aa98b6a0a324b",
+            "content": "Edit applied successfully."
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 15204,
+        "completion_tokens": 159,
+        "cached_tokens": 14336,
+        "cost_usd": 0.00067878,
+        "extra": {
+          "reasoning_tokens": 78
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 7,
+      "timestamp": "2026-09-18T21:26:31.139000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-a80307f28409a2b4",
+          "function_name": "edit",
+          "arguments": {
+            "filePath": "/app/src/batchline/execution/providers.py",
+            "newString": "    def describe(self) -> str:\n        return f\"pre-warmed container pool {self.pool} ({self.isolation} isolation)\"\n\n\n_PROVIDER_FACTORIES = {",
+            "oldString": "    def describe(self) -> str:\n        return f\"pre-warmed container pool {self.pool} ({self.isolation} isolation)\"\n\n\nclass LegacyRemoteProvider:"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-a80307f28409a2b4",
+            "content": "Edit applied successfully."
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 15449,
+        "completion_tokens": 99,
+        "cached_tokens": 14336,
+        "cost_usd": 0.00064653
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 8,
+      "timestamp": "2026-09-18T21:26:34.343000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "That edit was wrong \u2014 let me read the current state and fix it properly:",
+      "reasoning_content": "Oops, that edit replaced the wrong content. I replaced `class LegacyRemoteProvider:` with `_PROVIDER_FACTORIES = {` which creates broken code. Now I have two `_PROVIDER_FACTORIES = {` lines and the class body in between. Let me read the file to see the current state.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-abb34da5fcf9c57a",
+          "function_name": "read",
+          "arguments": {
+            "filePath": "/app/src/batchline/execution/providers.py",
+            "offset": 375
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-abb34da5fcf9c57a",
+            "content": "<path>/app/src/batchline/execution/providers.py</path>\n<type>file</type>\n<content>\n375:             labels=labels,\n376:         )\n377: \n378:     def describe(self) -> str:\n379:         return f\"pre-warmed container pool {self.pool} ({self.isolation} isolation)\"\n380: \n381: \n382: _PROVIDER_FACTORIES = {\n383:     \"\"\"Compatibility planner for Batchline's retired remote-runner API.\n384: \n385:     This adapter remains for installations that still persist v1 remote runner\n386:     settings. It converts the old option vocabulary into a deterministic command\n387:     invocation. New deployments should use ``container`` or ``local`` instead.\n388:     \"\"\"\n389: \n390:     name = \"legacy_remote\"\n391: \n392:     def __init__(\n393:         self,\n394:         *,\n395:         endpoint: str = \"https://runner.invalid/v1\",\n396:         project: str = \"default\",\n397:         region: str = \"local\",\n398:         runner_command: Sequence[str] = (\"batchline-remote-runner\",),\n399:         token_env: str = \"BATCHLINE_REMOTE_TOKEN\",\n400:         connect_timeout_seconds: int = 10,\n401:         poll_interval_seconds: int = 2,\n402:         upload_chunk_kb: int = 512,\n403:         download_chunk_kb: int = 512,\n404:         preserve_workspace: bool = False,\n405:         verify_tls: bool = True,\n406:     ):\n407:         if not endpoint.strip():\n408:             raise ValueError(\"endpoint cannot be empty\")\n409:         if not project.strip():\n410:             raise ValueError(\"project cannot be empty\")\n411:         if not region.strip():\n412:             raise ValueError(\"region cannot be empty\")\n413:         if not runner_command:\n414:             raise ValueError(\"runner_command cannot be empty\")\n415:         if connect_timeout_seconds < 1:\n416:             raise ValueError(\"connect_timeout_seconds must be positive\")\n417:         if poll_interval_seconds < 1:\n418:             raise ValueError(\"poll_interval_seconds must be positive\")\n419:         if upload_chunk_kb < 1 or download_chunk_kb < 1:\n420:             raise ValueError(\"chunk sizes must be positive\")\n421:         self.endpoint = endpoint.rstrip(\"/\")\n422:         self.project = project\n423:         self.region = region\n424:         self.runner_command = tuple(runner_command)\n425:         self.token_env = token_env\n426:         self.connect_timeout_seconds = connect_timeout_seconds\n427:         self.poll_interval_seconds = poll_interval_seconds\n428:         self.upload_chunk_kb = upload_chunk_kb\n429:         self.download_chunk_kb = download_chunk_kb\n430:         self.preserve_workspace = preserve_workspace\n431:         self.verify_tls = verify_tls\n432: \n433:     def _base_argv(self) -> list[str]:\n434:         argv = list(self.runner_command)\n435:         argv.extend([\"submit\", \"--endpoint\", self.endpoint])\n436:         argv.extend([\"--project\", self.project])\n437:         argv.extend([\"--region\", self.region])\n438:         argv.extend([\"--connect-timeout\", str(self.connect_timeout_seconds)])\n439:         argv.extend([\"--poll-interval\", str(self.poll_interval_seconds)])\n440:         return argv\n441: \n442:     def _append_workspace_flags(self, argv: list[str], request: ExecutionRequest) -> None:\n443:         argv.extend([\"--working-directory\", request.working_directory])\n444:         argv.extend([\"--upload-chunk-kb\", str(self.upload_chunk_kb)])\n445:         argv.extend([\"--download-chunk-kb\", str(self.download_chunk_kb)])\n446:         if self.preserve_workspace:\n447:             argv.append(\"--preserve-workspace\")\n448:         else:\n449:             argv.append(\"--discard-workspace\")\n450: \n451:     def _append_transport_flags(self, argv: list[str]) -> None:\n452:         if self.verify_tls:\n453:             argv.append(\"--verify-tls\")\n454:         else:\n455:             argv.append(\"--no-verify-tls\")\n456:         argv.extend([\"--token-env\", self.token_env])\n457: \n458:     def _append_limits(self, argv: list[str], request: ExecutionRequest) -> None:\n459:         argv.extend([\"--timeout-seconds\", str(request.timeout_seconds)])\n460:         argv.extend([\"--max-output-kb\", str(request.max_output_kb)])\n461: \n462:     def _append_identity(self, argv: list[str], request: ExecutionRequest) -> None:\n463:         argv.extend([\"--job-id\", request.job_id])\n464:         argv.extend([\"--kind\", request.kind])\n465:         argv.extend([\"--queue\", request.queue])\n466:         if request.trace_id:\n467:             argv.extend([\"--trace-id\", request.trace_id])\n468: \n469:     def _append_environment(self, argv: list[str], environment: Mapping[str, str]) -> None:\n470:         for key in sorted(environment):\n471:             argv.extend([\"--env\", f\"{key}={environment[key]}\"])\n472: \n473:     def _append_command(self, argv: list[str], command: Iterable[str]) -> None:\n474:         argv.append(\"--\")\n475:         argv.extend(command)\n476: \n477:     def _legacy_environment(self, request: ExecutionRequest) -> dict[str, str]:\n478:         environment = _clean_environment(request.environment)\n479:         environment.setdefault(\"BATCHLINE_LEGACY_REMOTE\", \"1\")\n480:         environment.setdefault(\"BATCHLINE_REMOTE_PROJECT\", self.project)\n481:         environment.setdefault(\"BATCHLINE_REMOTE_REGION\", self.region)\n482:         return environment\n483: \n484:     def _legacy_labels(self, request: ExecutionRequest) -> dict[str, str]:\n485:         labels = _base_labels(request)\n486:         labels[\"batchline.execution_mode\"] = \"legacy-remote\"\n487:         labels[\"batchline.remote_project\"] = self.project\n488:         labels[\"batchline.remote_region\"] = self.region\n489:         labels[\"batchline.remote_endpoint\"] = self.endpoint\n490:         return labels\n491: \n492:     def plan(self, request: ExecutionRequest) -> ExecutionPlan:\n493:         request.validate()\n494:         environment = self._legacy_environment(request)\n495:         argv = self._base_argv()\n496:         self._append_workspace_flags(argv, request)\n497:         self._append_transport_flags(argv)\n498:         self._append_limits(argv, request)\n499:         self._append_identity(argv, request)\n500:         self._append_environment(argv, environment)\n501:         self._append_command(argv, request.command)\n502:         return ExecutionPlan(\n503:             provider=self.name,\n504:             argv=tuple(argv),\n505:             cwd=_safe_working_directory(request.working_directory),\n506:             environment={},\n507:             timeout_seconds=request.timeout_seconds + self.connect_timeout_seconds,\n508:             max_output_kb=request.max_output_kb,\n509:             labels=self._legacy_labels(request),\n510:         )\n511: \n512:     def describe(self) -> str:\n513:         return f\"legacy remote runner {self.project}@{self.region} via {self.endpoint}\"\n514: \n515:     def compatibility_environment(self, request: ExecutionRequest) -> Mapping[str, str]:\n516:         \"\"\"Expose the normalized legacy environment for migration diagnostics.\"\"\"\n517:         request.validate()\n518:         return self._legacy_environment(request)\n519: \n520:     def compatibility_flags(self, request: ExecutionRequest) -> tuple[str, ...]:\n521:         \"\"\"Expose remote-runner flags without the final user command.\"\"\"\n522:         request.validate()\n523:         argv = self._base_argv()\n524:         self._append_workspace_flags(argv, request)\n525:         self._append_transport_flags(argv)\n526:         self._append_limits(argv, request)\n527:         self._append_identity(argv, request)\n528:         self._append_environment(argv, self._legacy_environment(request))\n529:         return tuple(argv)\n530: \n531:     def migration_hint(self) -> str:\n532:         return (\n533:             \"legacy_remote is deprecated; prefer container for isolated workers \"\n534:             \"or local/thread_pool for local execution\"\n535:         )\n536: \n537:     def normalized_endpoint(self) -> str:\n538:         return self.endpoint\n539: \n540:     def connection_policy(self) -> Mapping[str, object]:\n541:         return {\n542:             \"verify_tls\": self.verify_tls,\n543:             \"connect_timeout_seconds\": self.connect_timeout_seconds,\n544:             \"poll_interval_seconds\": self.poll_interval_seconds,\n545:         }\n546: \n547:     def transfer_policy(self) -> Mapping[str, object]:\n548:         return {\n549:             \"upload_chunk_kb\": self.upload_chunk_kb,\n550:             \"download_chunk_kb\": self.download_chunk_kb,\n551:             \"preserve_workspace\": self.preserve_workspace,\n552:         }\n553: \n554:     def identity_policy(self) -> Mapping[str, str]:\n555:         return {\n556:             \"project\": self.project,\n557:             \"region\": self.region,\n558:             \"token_env\": self.token_env,\n559:         }\n560: \n561:     def redacted_settings(self) -> Mapping[str, object]:\n562:         return {\n563:             \"endpoint\": self.endpoint,\n564:             \"project\": self.project,\n565:             \"region\": self.region,\n566:             \"runner_command\": self.runner_command,\n567:             \"token_env\": self.token_env,\n568:             \"connect_timeout_seconds\": self.connect_timeout_seconds,\n569:             \"poll_interval_seconds\": self.poll_interval_seconds,\n570:             \"upload_chunk_kb\": self.upload_chunk_kb,\n571:             \"download_chunk_kb\": self.download_chunk_kb,\n572:             \"preserve_workspace\": self.preserve_workspace,\n573:             \"verify_tls\": self.verify_tls,\n574:         }\n575: \n576:     def with_region(self, region: str) -> \"LegacyRemoteProvider\":\n577:         return LegacyRemoteProvider(\n578:             endpoint=self.endpoint,\n579:             project=self.project,\n580:             region=region,\n581:             runner_command=self.runner_command,\n582:             token_env=self.token_env,\n583:             connect_timeout_seconds=self.connect_timeout_seconds,\n584:             poll_interval_seconds=self.poll_interval_seconds,\n585:             upload_chunk_kb=self.upload_chunk_kb,\n586:             download_chunk_kb=self.download_chunk_kb,\n587:             preserve_workspace=self.preserve_workspace,\n588:             verify_tls=self.verify_tls,\n589:         )\n590: \n591:     def with_project(self, project: str) -> \"LegacyRemoteProvider\":\n592:         return LegacyRemoteProvider(\n593:             endpoint=self.endpoint,\n594:             project=project,\n595:             region=self.region,\n596:             runner_command=self.runner_command,\n597:             token_env=self.token_env,\n598:             connect_timeout_seconds=self.connect_timeout_seconds,\n599:             poll_interval_seconds=self.poll_interval_seconds,\n600:             upload_chunk_kb=self.upload_chunk_kb,\n601:             download_chunk_kb=self.download_chunk_kb,\n602:             preserve_workspace=self.preserve_workspace,\n603:             verify_tls=self.verify_tls,\n604:         )\n605: \n606:     def with_endpoint(self, endpoint: str) -> \"LegacyRemoteProvider\":\n607:         return LegacyRemoteProvider(\n608:             endpoint=endpoint,\n609:             project=self.project,\n610:             region=self.region,\n611:             runner_command=self.runner_command,\n612:             token_env=self.token_env,\n613:             connect_timeout_seconds=self.connect_timeout_seconds,\n614:             poll_interval_seconds=self.poll_interval_seconds,\n615:             upload_chunk_kb=self.upload_chunk_kb,\n616:             download_chunk_kb=self.download_chunk_kb,\n617:             preserve_workspace=self.preserve_workspace,\n618:             verify_tls=self.verify_tls,\n619:         )\n620: \n621: \n622: \n623: _PROVIDER_FACTORIES = {\n624:     \"local\": LocalProcessProvider,\n625:     \"thread_pool\": ThreadPoolProvider,\n626:     \"container\": ContainerCommandProvider,\n627:     \"sandbox\": SandboxProcessProvider,\n628:     \"batch_file\": BatchFileProvider,\n629:     \"container_pool\": ContainerPoolProvider,\n630:     \"legacy_remote\": LegacyRemoteProvider,\n631: }\n632: \n633: \n634: def provider_names() -> tuple[str, ...]:\n635:     return tuple(sorted(_PROVIDER_FACTORIES))\n636: \n637: \n638: def get_provider(name: str) -> ExecutionProvider:\n639:     try:\n640:         factory = _PROVIDER_FACTORIES[name]\n641:     except KeyError as exc:\n642:         raise KeyError(f\"unknown execution provider: {name}\") from exc\n643:     return factory()\n\n(End of file - total 643 lines)\n</content>"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 15556,
+        "completion_tokens": 42,
+        "cached_tokens": 14336,
+        "cost_usd": 0.00066608,
+        "extra": {
+          "reasoning_tokens": 64
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 9,
+      "timestamp": "2026-09-18T21:26:37.905000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "The file is now mangled \u2014 my second edit replaced the class header with a duplicate registry header. I'll repair it with a precise scripted deletion of the orphaned class body:",
+      "reasoning_content": "The file is now mangled. I need to remove everything from line 383 (the leftover class docstring after my bad replacement) through line 620, and keep the second `_PROVIDER_FACTORIES` dict minus the `legacy_remote` entry.\n\nLet me do this with a single edit: replace from the broken `_PROVIDER_FACTORIES = {` + class body + second dict with a clean version. I'll replace the entire block from line 382 to line 631.\n\nActually, the cleanest approach: replace the block starting at `_PROVIDER_FACTORIES = {\n    \"\"\"Compatibility planner...` through `    \"legacy_remote\": LegacyRemoteProvider,\n}` with just the correct dict.\n\nLet me construct the edit. The old string is huge. Alternatively, I could use Python to do this more safely. Actually, let me just do the edit with unique anchors. The block I need to remove starts at line 382 `_PROVIDER_FACTORIES = {` followed by `    \"\"\"Compatibility planner` and ends at line 631 `}`.\n\nI'll replace the whole mangled section with the clean dict. Let me write the edit using the start and end anchors. Since oldString must be exact, I'll include the whole block. That's long but safe. Alternatively, use bash sed. But the instructions say prefer Edit tool. Let me do a two-step edit:\n\nStep 1: Replace `\"\"\"Compatibility planner for Batchline's retired remote-runner API....` \u2014 actually the simplest: the mangled part is lines 382-620 (`_PROVIDER_FACTORIES = {` through the end of `with_endpoint` method) plus the second dict.\n\nI'll do one edit replacing from `_PROVIDER_FACTORIES = {\n    \"\"\"Compatibility planner` ... to the final `\"legacy_remote\": LegacyRemoteProvider,\n}` with the correct dict. The oldString needs to be the entire block. That's ~250 lines. That's a lot but doable. Alternatively, I can do it in Python via bash. But the guidance prefers Edit. Let me think about a more surgical approach:\n\nEdit 1: Remove lines 382-621: from `_PROVIDER_FACTORIES = {\n    \"\"\"Compatibility planner for Batchline's retired remote-runner API.` all the way to the end of `with_endpoint` (line 619 `        )`) plus blank lines, leaving `_PROVIDER_FACTORIES = {` (the real one at line 623) onward.\n\nThe problem: oldString must be unique and exact. The block is long. Instead, I could use two smaller edits:\n\nEdit A: The mangled start:\n```\n_PROVIDER_FACTORIES = {\n    \"\"\"Compatibility planner for Batchline's retired remote-runner API.\n```\nHmm, but I need to remove the whole class body, not just the start.\n\nHonestly, the cleanest fix given the mangled state is to rewrite the file section using Python via bash, or just do the big Edit. Let me do the big Edit \u2014 I have the exact content from the read. I'll replace lines 382-631 with the clean registry.\n\nActually wait \u2014 simpler: since Edit supports replaceAll=false and uniqueness, I can do this in one edit where oldString spans from line 382 to line 631. It's long but exact. Let me construct it carefully from the read output (without line number prefixes).\n\nThe block:\n\n```\n_PROVIDER_FACTORIES = {\n    \"\"\"Compatibility planner for Batchline's retired remote-runner API.\n\n    This adapter remains for installations that still persist v1 remote runner\n    settings. It converts the old option vocabulary into a deterministic command\n    invocation. New deployments should use ``container`` or ``local`` instead.\n    \"\"\"\n\n    name = \"legacy_remote\"\n...entire class body...\n        )\n\n\n_PROVIDER_FACTORIES = {\n    \"local\": LocalProcessProvider,\n    \"thread_pool\": ThreadPoolProvider,\n    \"container\": ContainerCommandProvider,\n    \"sandbox\": SandboxProcessProvider,\n    \"batch_file\": BatchFileProvider,\n    \"container_pool\": ContainerPoolProvider,\n    \"legacy_remote\": LegacyRemoteProvider,\n}\n```\n\nReplace with:\n\n```\n_PROVIDER_FACTORIES = {\n    \"local\": LocalProcessProvider,\n    \"thread_pool\": ThreadPoolProvider,\n    \"container\": ContainerCommandProvider,\n    \"sandbox\": SandboxProcessProvider,\n    \"batch_file\": BatchFileProvider,\n    \"container_pool\": ContainerPoolProvider,\n}\n```\n\nThat's a big oldString. I must reproduce it exactly, including the double blank lines. Risky but I have the exact text from the read. Alternatively, a shorter approach: use Python to delete lines 382-620 and 630, then fix. Actually, even simpler and more reliable: write a small Python script via bash to reconstruct. But Edit tool is preferred...\n\nLet me think about a shorter unique-anchor strategy:\n\nEdit 1: Replace the mangled header region:\nold: `_PROVIDER_FACTORIES = {\\n    \"\"\"Compatibility planner for Batchline's retired remote-runner API.`\nThat's unique. But I still need to delete the body.\n\nAlternative strategy: use sed via bash to delete lines 382-620 and line 630. That's efficient and precise. The guidance says avoid sed \"unless truly necessary\" \u2014 here it's a large deletion, and it's a legitimate use. But actually, let me just do the big Edit; it's deterministic since I have the exact content. Actually the safest is a Python one-liner that operates on content:\n\npython3 - <<'EOF'\nfrom pathlib import Path\np = Path(\"/app/src/batchline/execution/providers.py\")\ntext = p.read_text()\nstart = text.index(\"_PROVIDER_FACTORIES = {\")\nend = text.index(\"_PROVIDER_FACTORIES = {\", start + 1)\nclean = text[:start] + text[end:]\nclean = clean.replace('    \"legacy_remote\": LegacyRemoteProvider,\\n', \"\")\np.write_text(clean)\nEOF\n\nThat's precise. But writing files via bash heredoc... The instruction says use Write tool rather than echo/cat heredoc. Running a python script is a bash operation, acceptable-ish, but I think the cleanest compliant way is the Edit tool with the full block. Given I have the exact content, let me do the big edit. I'll be careful with blank lines: lines 620-622 are `        )` then two blank lines (621, 622 empty) then `_PROVIDER_FACTORIES`. From the read: line 619 `        )`, 620 blank, 621 blank, 622 blank? Let me check: 619 `        )`, 620 ``, 621 ``, 622 ``? The read shows:\n\n```\n619:         )\n620: (blank)\n621: (blank)\n622: (blank)? \n623: _PROVIDER_FACTORIES = {\n```\n\nActually it shows:\n```\n618:             verify_tls=self.verify_tls,\n619:         )\n620: \n621: \n622: \n623: _PROVIDER_FACTORIES = {\n```\n\nHmm, lines 620, 621, 622 \u2014 three blank lines? The original file had lines 622-623 as blank (two blank lines between class end and dict at 625 in original numbering: original had 623 `        )` wait no.\n\nOriginal: 621 `        )` end of with_endpoint? No \u2014 original line 609-621:\n```\n608:     def with_endpoint...\n609:         return LegacyRemoteProvider(\n...\n620:         )\n621: (blank)\n622: (blank)\n623: (blank)?\n624: \n625: _PROVIDER_FACTORIES = {\n```\nOriginal read showed:\n```\n621: \n622: \n623: \n624: _PROVIDER_FACTORIES = {\n```\nWait no, original showed:\n```\n620:         )\n621: \n622: \n623: \n624: _PROVIDER_FACTORIES = {\n```\nHmm, actually original lines 621-623 were three blank lines? It showed:\n```\n621: (empty)\n622: (empty)\n623: (empty)\n624: _PROVIDER_FACTORIES = {\n```\nWait the original read output showed:\n```\n621: \n622: \n623: \n624: _PROVIDER_FACTORIES = {\n```\nLet me recheck the original output: it showed\n\n```\n620: \n621: \n622: \n623: \n624: _PROVIDER_FACTORIES = {\n```\n\nHmm no. Original file lines 620-625:\n```\n620: \n621: \n622: \n623: \n624: _PROVIDER_FACTORIES = {\n```\nActually the original read displayed:\n```\n609:             verify_tls=self.verify_tls,\n610:         )\n611: \n612: \n613: \n614: _PROVIDER_FACTORIES = {\n```\nNo wait. Let me look at the original output again:\n\n```\n608:     def with_endpoint(self, endpoint: str) -> \"LegacyRemoteProvider\":\n609:         return LegacyRemoteProvider(\n610:             endpoint=endpoint,\n611:             project=self.project,\n612:             region=self.region,\n613:             runner_command=self.runner_command,\n614:             token_env=self.token_env,\n615:             connect_timeout_seconds=self.connect_timeout_seconds,\n616:             poll_interval_seconds=self.poll_interval_seconds,\n617:             upload_chunk_kb=self.upload_chunk_kb,\n618:             download_chunk_kb=self.download_chunk_kb,\n619:             preserve_workspace=self.preserve_workspace,\n620:             verify_tls=self.verify_tls,\n621:         )\n622: \n623: \n624: \n625: _PROVIDER_FACTORIES = {\n```\n\nSo there were 3 blank lines (622, 623, 624). In the current mangled file: 619 `        )`, then 620, 621, 622 blank, then 623 `_PROVIDER_FACTORIES`. Yes matches (my edit removed 1 line: `class LegacyRemoteProvider:` replaced by 2 lines, net +1... wait, original `class LegacyRemoteProvider:` (1 line) \u2192 `_PROVIDER_FACTORIES = {` (1 line), net 0. But file went from 645 to 643 lines? Original 645 lines, now 643. Hmm, the docstring edit removed 3 lines (replaced 9 lines with 6). So 645-3=642... but now it's 643. Hmm, whatever \u2014 the exact current state is what the read shows.\n\nOK let me just do the big edit. From current read, lines 382-631:\n\nStart anchor: `_PROVIDER_FACTORIES = {` at 382, then the class docstring etc., ending with `\"legacy_remote\": LegacyRemoteProvider,\\n}` at 630-631.\n\nI'll write the oldString as the entire block. Given the length, there's risk of transcription error. The python-via-bash approach is more reliable. Given the situation (I made a mistake and need a precise repair), I'll use a careful Python script via bash. That's justified \u2014 Edit with a 250-line oldString is error-prone.\n\nActually, you know what, let me use the Write tool to rewrite the whole file. I have the full original content and know exactly what it should be: original file minus docstring change, minus the LegacyRemoteProvider class, minus the registry entry. But Write requires the whole file (~380 lines). I have all of it from the first read. That's also transcription-heavy but I can compose it confidently.\n\nHmm, simpler: two targeted edits.\n\nEdit 1: Remove the mangled section. oldString:\n```\n_PROVIDER_FACTORIES = {\n    \"\"\"Compatibility planner for Batchline's retired remote-runner API.\n```\nThat's unique (the second dict doesn't have the docstring after). But I can't just remove the start \u2014 the rest of the class body would remain as orphan code.\n\nOK, decision: I'll use Python via bash for the precise deletion. It's the most reliable repair.\n\nPlan:\n```python\nfrom pathlib import Path\np = Path(\"/app/src/batchline/execution/providers.py\")\nlines = p.read_text().splitlines(keepends=True)\n# find index of first '_PROVIDER_FACTORIES = {' and second one\nstarts = [i for i, l in enumerate(lines) if l.startswith(\"_PROVIDER_FACTORIES = {\")]\n# lines between starts[0] and starts[1] should be deleted\nnew = lines[:starts[0]] + lines[starts[1]:]\ntext = \"\".join(new)\ntext = text.replace('    \"legacy_remote\": LegacyRemoteProvider,\\n', \"\")\np.write_text(text)\n```\n\nAlso need to clean up: after deletion, there will be lines 379-381: `        return f\"pre-warmed...\"`, blank, blank, then `_PROVIDER_FACTORIES = {`. Good \u2014 two blank lines before the dict. \n\nThen remove the legacy registry line. Then verify by reading the tail of the file and running python syntax check.\n\nThen edit the test file to remove the legacy test.\n\nThen run the test suite. Let me check how tests run \u2014 look for pyproject.toml / pytest config.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-afe79cad0c5cad3c",
+          "function_name": "bash",
+          "arguments": {
+            "command": "python3 - <<'EOF'\nfrom pathlib import Path\np = Path(\"/app/src/batchline/execution/providers.py\")\nlines = p.read_text().splitlines(keepends=True)\nstarts = [i for i, l in enumerate(lines) if l.startswith(\"_PROVIDER_FACTORIES = {\")]\nassert len(starts) == 2, starts\nnew = lines[:starts[0]] + lines[starts[1]:]\ntext = \"\".join(new)\nassert '    \"legacy_remote\": LegacyRemoteProvider,\\n' in text\ntext = text.replace('    \"legacy_remote\": LegacyRemoteProvider,\\n', \"\")\nassert \"LegacyRemoteProvider\" not in text and \"legacy_remote\" not in text\np.write_text(text)\nprint(\"repaired\")\nEOF"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-afe79cad0c5cad3c",
+            "content": "repaired\n"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 18644,
+        "completion_tokens": 204,
+        "cached_tokens": 14336,
+        "cost_usd": 0.00261928,
+        "extra": {
+          "reasoning_tokens": 2882
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 10,
+      "timestamp": "2026-09-18T21:27:17.693000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "reasoning_content": "Now verify the repaired file tail and syntax, then update the test file. Let me read the tail of providers.py and also edit the test file. These are independent \u2014 but I should verify the file first before editing tests? They're independent edits. I can do both in parallel: read the tail of providers.py + edit the test file.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-9c3facc096202f01",
+          "function_name": "read",
+          "arguments": {
+            "filePath": "/app/src/batchline/execution/providers.py",
+            "offset": 370
+          }
+        },
+        {
+          "tool_call_id": "chatcmpl-tool-811fcc3cafd8c78a",
+          "function_name": "edit",
+          "arguments": {
+            "filePath": "/app/tests/execution/test_providers.py",
+            "newString": "def test_unknown_provider_is_rejected():",
+            "oldString": "def test_legacy_remote_provider_remains_compatible_for_v03():\n    provider = get_provider(\"legacy_remote\")\n    plan = provider.plan(_request())\n    assert plan.provider == \"legacy_remote\"\n    assert \"--project\" in plan.argv\n    assert \"default\" in plan.argv\n    assert provider.migration_hint().startswith(\"legacy_remote is deprecated\")\n\n\ndef test_unknown_provider_is_rejected():"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-9c3facc096202f01",
+            "content": "<path>/app/src/batchline/execution/providers.py</path>\n<type>file</type>\n<content>\n370:             argv=tuple(argv),\n371:             cwd=_safe_working_directory(request.working_directory),\n372:             environment={},\n373:             timeout_seconds=request.timeout_seconds,\n374:             max_output_kb=request.max_output_kb,\n375:             labels=labels,\n376:         )\n377: \n378:     def describe(self) -> str:\n379:         return f\"pre-warmed container pool {self.pool} ({self.isolation} isolation)\"\n380: \n381: \n382: _PROVIDER_FACTORIES = {\n383:     \"local\": LocalProcessProvider,\n384:     \"thread_pool\": ThreadPoolProvider,\n385:     \"container\": ContainerCommandProvider,\n386:     \"sandbox\": SandboxProcessProvider,\n387:     \"batch_file\": BatchFileProvider,\n388:     \"container_pool\": ContainerPoolProvider,\n389: }\n390: \n391: \n392: def provider_names() -> tuple[str, ...]:\n393:     return tuple(sorted(_PROVIDER_FACTORIES))\n394: \n395: \n396: def get_provider(name: str) -> ExecutionProvider:\n397:     try:\n398:         factory = _PROVIDER_FACTORIES[name]\n399:     except KeyError as exc:\n400:         raise KeyError(f\"unknown execution provider: {name}\") from exc\n401:     return factory()\n\n(End of file - total 401 lines)\n</content>"
+          },
+          {
+            "source_call_id": "chatcmpl-tool-811fcc3cafd8c78a",
+            "content": "Edit applied successfully."
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 21737,
+        "completion_tokens": 140,
+        "cached_tokens": 18432,
+        "cost_usd": 0.00115321,
+        "extra": {
+          "reasoning_tokens": 69
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 11,
+      "timestamp": "2026-09-18T21:27:23.729000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "File repaired, test removed. Now verifying \u2014 full grep for stale references, syntax/import check, and the test suite:",
+      "reasoning_content": "The file is repaired and the test removed. Now verify:\n1. Syntax check / no remaining references to legacy\n2. Run the full test suite\n\nLet me check how tests are run \u2014 check pyproject.toml for pytest config, and run pytest.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-aacc125e74a03ea3",
+          "function_name": "bash",
+          "arguments": {
+            "command": "rg -n \"legacy_remote|LegacyRemoteProvider|legacy\" --hidden -g '!.git' ; python3 -c \"from batchline.execution import provider_names, get_provider; print(provider_names()); import pytest; pytest.raises(KeyError, get_provider, 'legacy_remote'); print('legacy_remote rejected OK')\""
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-aacc125e74a03ea3",
+            "content": "/usr/bin/bash: line 1: rg: command not found\n('batch_file', 'container', 'container_pool', 'local', 'sandbox', 'thread_pool')\nlegacy_remote rejected OK\n"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 22296,
+        "completion_tokens": 98,
+        "cached_tokens": 20480,
+        "cost_usd": 0.0009618,
+        "extra": {
+          "reasoning_tokens": 52
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 12,
+      "timestamp": "2026-09-18T21:27:32.524000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-8393ce80bfe22690",
+          "function_name": "grep",
+          "arguments": {
+            "pattern": "legacy_remote|LegacyRemoteProvider|legacy"
+          }
+        },
+        {
+          "tool_call_id": "chatcmpl-tool-bef79fbaea4fa11a",
+          "function_name": "bash",
+          "arguments": {
+            "command": "python3 -m pytest --tb=short"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-8393ce80bfe22690",
+            "content": "Found 2 matches\n/app/README.md:\n  Line 28: - `src/batchline/execution/` \u2014 local/container execution planning plus legacy remote compatibility.\n\n\n/app/src/batchline/jobs/status.py:\n  Line 91:     \"\"\"Return the canonical status for a status value or accepted legacy alias.\"\"\"\n"
+          },
+          {
+            "source_call_id": "chatcmpl-tool-bef79fbaea4fa11a",
+            "content": "......................................................                   [100%]\n54 passed in 2.59s\n"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 22490,
+        "completion_tokens": 35,
+        "cached_tokens": 20480,
+        "cost_usd": 0.0009334
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 13,
+      "timestamp": "2026-09-18T21:27:40.666000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "All tests pass. The README still mentions the removed legacy remote compatibility, so I'll update that stale line (the `status.py` \"legacy alias\" is unrelated to execution providers):",
+      "reasoning_content": "All 54 tests pass. Two remaining mentions:\n\n1. `/app/src/batchline/jobs/status.py` line 91 \u2014 \"legacy alias\" for status values, unrelated to the execution provider. Leave it.\n2. `/app/README.md` line 28 \u2014 \"local/container execution planning plus legacy remote compatibility.\" This documents the removed feature, so it's now stale. The task says to remove the provider, registry entry, and stale tests. Updating the README line is reasonable housekeeping to keep docs accurate. It's directly about the removed legacy remote compatibility. I'll update it.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-b83fe36ae29a05aa",
+          "function_name": "read",
+          "arguments": {
+            "filePath": "/app/README.md",
+            "limit": 10,
+            "offset": 24
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-b83fe36ae29a05aa",
+            "content": "<path>/app/README.md</path>\n<type>file</type>\n<content>\n24: - `src/batchline/api/` \u2014 serializer-facing public representations and stable error payloads.\n25: - `src/batchline/cli/` \u2014 framework-independent command helpers and human-readable renderers.\n26: - `src/batchline/events/` \u2014 lifecycle event envelopes, encoders, registry, schema validation.\n27: - `src/batchline/policies/` \u2014 typed per-kind job policy catalog.\n28: - `src/batchline/execution/` \u2014 local/container execution planning plus legacy remote compatibility.\n29: - `src/batchline/operations/` \u2014 streaming JSONL operational archive helpers.\n30: - `src/batchline/config/` \u2014 YAML loading, typed service configuration, schema validation, deployment validation, detailed reporting.\n31: - `schemas/` \u2014 event and service configuration contracts.\n32: - `tools/` \u2014 local validation, reporting, and fixture utilities.\n33: - `examples/` \u2014 representative job and event payloads.\n\n(Showing lines 24-33 of 35. Use offset=34 to continue.)\n</content>"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 22613,
+        "completion_tokens": 63,
+        "cached_tokens": 20480,
+        "cost_usd": 0.00102635,
+        "extra": {
+          "reasoning_tokens": 121
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 14,
+      "timestamp": "2026-09-18T21:27:46.482000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-b6c8ae69d0d8d82a",
+          "function_name": "edit",
+          "arguments": {
+            "filePath": "/app/README.md",
+            "newString": "- `src/batchline/execution/` \u2014 local/container execution planning.",
+            "oldString": "- `src/batchline/execution/` \u2014 local/container execution planning plus legacy remote compatibility."
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-b6c8ae69d0d8d82a",
+            "content": "Edit applied successfully."
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 23043,
+        "completion_tokens": 62,
+        "cached_tokens": 22528,
+        "cost_usd": 0.00078409
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 15,
+      "timestamp": "2026-09-18T21:27:49.770000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-9d395a35455d9967",
+          "function_name": "bash",
+          "arguments": {
+            "command": "git diff --stat && python3 -m pytest -q 2>&1 | tail -1"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-9d395a35455d9967",
+            "content": " README.md                            |   2 +-\n src/batchline/execution/providers.py | 246 +----------------------------------\n tests/execution/test_providers.py    |   9 --\n 3 files changed, 2 insertions(+), 255 deletions(-)\n......................................................                   [100%]\n"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 23113,
+        "completion_tokens": 30,
+        "cached_tokens": 22528,
+        "cost_usd": 0.00077859
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 16,
+      "timestamp": "2026-09-18T21:27:56.392000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "",
+      "reasoning_content": "All 54 tests pass (the tail -1 didn't show the summary line clearly, but the previous full run showed 54 passed and this run shows all dots). Let me confirm the count once more properly.",
+      "tool_calls": [
+        {
+          "tool_call_id": "chatcmpl-tool-bbf2e5e8d04ae89a",
+          "function_name": "bash",
+          "arguments": {
+            "command": "python3 -m pytest 2>&1 | tail -2"
+          }
+        }
+      ],
+      "observation": {
+        "results": [
+          {
+            "source_call_id": "chatcmpl-tool-bbf2e5e8d04ae89a",
+            "content": "......................................................                   [100%]\n54 passed in 2.26s\n"
+          }
+        ]
+      },
+      "metrics": {
+        "prompt_tokens": 23209,
+        "completion_tokens": 23,
+        "cached_tokens": 22528,
+        "cost_usd": 0.00081099,
+        "extra": {
+          "reasoning_tokens": 43
+        }
+      },
+      "llm_call_count": 1
+    },
+    {
+      "step_id": 17,
+      "timestamp": "2026-09-18T21:28:02.586000+00:00",
+      "source": "agent",
+      "model_name": "fireworks-ai/accounts/fireworks/models/glm-5p3-flash",
+      "message": "Done. Removed the legacy remote provider:\n\n- **`src/batchline/execution/providers.py`** \u2014 deleted the `LegacyRemoteProvider` class and its `\"legacy_remote\"` registry entry, and dropped the legacy mention from the module docstring. Registry now contains only `local`, `thread_pool`, `container`, `sandbox`, `batch_file`, `container_pool`.\n- **`tests/execution/test_providers.py`** \u2014 removed `test_legacy_remote_provider_remains_compatible_for_v03`.\n- **`README.md`** \u2014 updated the stale \"legacy remote compatibility\" description.\n\nVerified: `provider_names()` excludes `legacy_remote`, `get_provider(\"legacy_remote\")` raises `KeyError`, and all 54 tests pass. No stub or alias was left behind.",
+      "metrics": {
+        "prompt_tokens": 23296,
+        "completion_tokens": 161,
+        "cached_tokens": 22528,
+        "cost_usd": 0.00087154
+      },
+      "llm_call_count": 1
+    }
+  ],
+  "final_metrics": {
+    "total_prompt_tokens": 296787,
+    "total_completion_tokens": 1218,
+    "total_cached_tokens": 258048,
+    "total_cost_usd": 0.01594679,
+    "total_steps": 17
+  }
+}

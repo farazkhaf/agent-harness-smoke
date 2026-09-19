@@ -1,0 +1,72 @@
+diff --git a/src/batchline/api/serializers/jobs.py b/src/batchline/api/serializers/jobs.py
+index f616e9a..d581193 100644
+--- a/src/batchline/api/serializers/jobs.py
++++ b/src/batchline/api/serializers/jobs.py
+@@ -17,6 +17,7 @@ def serialize_job(job: Job, *, include_payload: bool = False) -> dict[str, Any]:
+         "id": job.id,
+         "kind": job.kind,
+         "queue": job.queue,
++        "submitted_by": job.submitted_by,
+         "status": job.status.value,
+         "attempt": job.attempt,
+         "max_attempts": job.max_attempts,
+@@ -37,6 +38,7 @@ def serialize_job_summary(job: Job) -> dict[str, Any]:
+         "id": job.id,
+         "kind": job.kind,
+         "queue": job.queue,
++        "submitted_by": job.submitted_by,
+         "status": job.status.value,
+         "status_label": display_label(job.status),
+         "status_category": status_category(job.status),
+diff --git a/src/batchline/cli/render/jobs.py b/src/batchline/cli/render/jobs.py
+index 542ffcc..4648b39 100644
+--- a/src/batchline/cli/render/jobs.py
++++ b/src/batchline/cli/render/jobs.py
+@@ -18,6 +18,7 @@ def render_job_detail(job: Job) -> str:
+         f"Job: {job.id}",
+         f"Kind: {job.kind}",
+         f"Queue: {job.queue}",
++        f"Submitted by: {job.submitted_by or '-'}",
+         f"Status: {display_label(job.status)}",
+         f"Attempt: {job.attempt}/{job.max_attempts}",
+         f"Created: {job.created_at.isoformat()}",
+diff --git a/src/batchline/jobs/models.py b/src/batchline/jobs/models.py
+index ee9fdb0..d425142 100644
+--- a/src/batchline/jobs/models.py
++++ b/src/batchline/jobs/models.py
+@@ -53,6 +53,7 @@ class Job:
+     payload: Mapping[str, Any] = field(default_factory=dict)
+     result: Mapping[str, Any] | None = None
+     error: JobError | None = None
++    submitted_by: str | None = None
+ 
+     def __post_init__(self) -> None:
+         if not self.id.strip():
+@@ -93,6 +94,7 @@ class Job:
+             payload=data.get("payload", {}),
+             result=data.get("result"),
+             error=job_error,
++            submitted_by=data.get("submitted_by"),
+         )
+ 
+     def transition(
+diff --git a/src/batchline/jobs/service.py b/src/batchline/jobs/service.py
+index 0881f77..4cc3689 100644
+--- a/src/batchline/jobs/service.py
++++ b/src/batchline/jobs/service.py
+@@ -24,6 +24,7 @@ class JobService:
+         job_id: str,
+         kind: str,
+         queue: str,
++        submitted_by: str | None = None,
+         payload: Mapping[str, Any] | None = None,
+         max_attempts: int = 3,
+     ) -> Job:
+@@ -33,6 +34,7 @@ class JobService:
+             id=job_id,
+             kind=kind,
+             queue=queue,
++            submitted_by=submitted_by,
+             payload=payload or {},
+             max_attempts=max_attempts,
+         )

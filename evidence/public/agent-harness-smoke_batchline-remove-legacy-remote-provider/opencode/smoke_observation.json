@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1",
+  "observer": "git",
+  "baseline_ref": "9359cef4e028bd19e3b88b9c476f3fa0d8b98a56",
+  "changed_files": 3,
+  "changed_paths": [
+    "README.md",
+    "src/batchline/execution/providers.py",
+    "tests/execution/test_providers.py"
+  ],
+  "lines_added": 2,
+  "lines_deleted": 255,
+  "untracked_files": 0,
+  "untracked_paths": [],
+  "unexpected_files_changed": 1,
+  "unexpected_paths": [
+    "README.md"
+  ],
+  "forbidden_files_changed": 0,
+  "forbidden_paths": []
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "published_task_id": "agent-harness-smoke/batchline-submitted-by",
+  "task_version_source": "suite manifest",
+  "trial_name": "batchline-submitted-by--mini-swe__7G5pypY",
+  "task_checksum": "4ed2ec93312e550d8d6ddb4472500228e256fd307f059182398d03ab3e998c01",
+  "harness": "mini-swe-agent",
+  "harness_version": "2.4.6",
+  "provider": "fireworks_ai",
+  "model": "accounts/fireworks/models/glm-5p3-flash",
+  "reward": 1.0,
+  "input_tokens": 143568,
+  "cached_tokens": 112640,
+  "output_tokens": 3356,
+  "cost_usd": 0.009696399999999999,
+  "started_at": "2026-09-16T07:10:59.866850Z",
+  "finished_at": "2026-09-16T07:14:10.781389Z",
+  "source_hashes": {
+    "internal_harbor_result_sha256": "18ccea8669a48232b3e1b5a8cf05dff90d0ed57ef8db9d4b311cef1a4204b048",
+    "internal_raw_trajectory_sha256": "5d84d61edbb6373889f29e09bee8830a7cb014ff5ed48f0ab8779b81a17e3e54",
+    "published_sanitized_trajectory_sha256": "634db83355c93de3eaf738cd35972821bed11d611bad5ef221fcf883cabced08"
+  },
+  "redactions": [
+    "host-local trial URI",
+    "host-local resolved task paths",
+    "host-local trials directory",
+    "rendered host system-information fingerprint"
+  ]
+}

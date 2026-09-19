@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1",
+  "task_id": "batchline-remove-legacy-remote-provider",
+  "task_version": "0.1.1",
+  "task_type": "focused-task",
+  "capability_family": "large-contiguous-deletion",
+  "anchor_id": "batchline",
+  "anchor_version": "0.3",
+  "workspace_observer": "git",
+  "expected_edit_globs": [
+    "src/batchline/execution/providers.py",
+    "tests/execution/test_providers.py"
+  ],
+  "forbidden_edit_globs": []
+}

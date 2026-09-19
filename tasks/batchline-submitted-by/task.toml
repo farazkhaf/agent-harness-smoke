@@ -1,0 +1,25 @@
+schema_version = "1.4"
+
+[task]
+name = "agent-harness-smoke/batchline-submitted-by"
+version = "0.1.0"
+description = "Propagate optional job submitter metadata through existing Batchline public surfaces"
+authors = [{ name = "Faraz Ul Khaf" }]
+keywords = ["coding-agent", "harness", "focused-task", "batchline", "multi-file"]
+
+[metadata]
+category = "programming"
+purpose = "focused-task"
+anchor_id = "batchline"
+anchor_version = "0.2"
+network_required_by_task = false
+
+[agent]
+timeout_sec = 300
+
+[verifier]
+timeout_sec = 120
+
+[environment]
+cpus = 2
+memory_mb = 2048

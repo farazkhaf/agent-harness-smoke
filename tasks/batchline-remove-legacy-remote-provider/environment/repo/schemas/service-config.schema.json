@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://batchline.example.invalid/schemas/service-config.schema.json",
+  "title": "Batchline service catalog",
+  "description": "Base service declarations before environment-specific overrides are applied.",
+  "type": "object",
+  "required": [
+    "services"
+  ],
+  "properties": {
+    "services": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/service"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "service": {
+      "type": "object",
+      "required": [
+        "queue",
+        "concurrency",
+        "timeout_seconds",
+        "max_retries",
+        "enabled"
+      ],
+      "properties": {
+        "queue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

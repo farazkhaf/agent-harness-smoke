@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "observer": "git",
+  "baseline_ref": "02bb0d89a3342b941c93ee038a4f883b7bfee663",
+  "changed_files": 1,
+  "changed_paths": [
+    "operations/quarantine-events.txt"
+  ],
+  "lines_added": 10,
+  "lines_deleted": 0,
+  "untracked_files": 0,
+  "untracked_paths": [],
+  "unexpected_files_changed": 0,
+  "unexpected_paths": [],
+  "forbidden_files_changed": 0,
+  "forbidden_paths": []
+}
