@@ -1,6 +1,6 @@
 param(
     [string]$RepoRoot = "",
-    [string]$SuitePath = "suites\batchline-scenario1-comparison\suite.toml",
+    [string]$SuitePath = "suites\batchline-scenario1\suite.toml",
     [string]$TrialsRoot = "",
     [string]$OutputRoot = "",
     [string[]]$TaskId = @(),

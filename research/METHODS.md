@@ -4,16 +4,22 @@
 
 A research observation is one recorded agent execution under a declared task version, harness profile, model/provider configuration, environment, timeout policy, and verifier revision. The final workspace establishes correctness; the trajectory supplies route evidence.
 
+## Execution environment
+
+The recorded experiments use Harbor 0.22.0 with Docker-backed task environments. Public harness cells use OpenCode 1.18.30 or Mini-SWE-Agent 2.4.6. The model is GLM-5.3-Flash served through Fireworks AI; Scenario 1 uses matched effective `max` reasoning across the recorded harness cells. The custom harness is treated as a private execution configuration and is not redistributed.
+
+Exact task, harness, model, verifier, timeout, and run telemetry are retained with the recorded evidence. External software and service references are listed in `docs/provenance/software_attribution.md`.
+
 ## Evidence layers
 
 The study keeps four layers distinct:
 
-1. **Task verifier:** contract correctness.
-2. **Workspace observation:** neutral final-state scope and coarse diff statistics.
-3. **Run telemetry:** calls, tokens, cache use, cost when available, and timing.
-4. **Trajectory:** the sequence of observable interactions used for route analysis.
+1. Task verifier: contract correctness.
+2. Workspace observation: final-state scope and coarse diff statistics.
+3. Run telemetry: calls, tokens, cache use, cost when available, and timing.
+4. Trajectory: the sequence of observable interactions used for route analysis.
 
-The first three layers remain part of the reusable product/evidence surface. Research interpretation is stored separately under `research/`.
+The first three layers remain in the shared task/evidence tree. Research interpretation is stored separately under `research/`.
 
 ## Route coding
 
@@ -21,7 +27,7 @@ The active coding vocabulary distinguishes inspection and transformation mechani
 
 Recovery is classified by cause rather than by the fact that extra work occurred: implementation recovery, edit-route correction, verification-probe recovery, and environment/tool recovery are separate categories. Context stewardship includes anticipatory probing, re-grounding after edits, failure localization, requirement retention, repeated rediscovery, temporary verification artifacts, and work performed after the repository first reaches a green state.
 
-The task-local Scenario 1 `EVALUATION_GUIDE.md` contains the operational coding procedure used for that scenario.
+The task-local Scenario 1 `EVALUATION_GUIDE.md` contains the operational coding procedure used for that scenario. Approved authoring and validation sources are indexed in `TASK_DESIGN_SOURCES.md`.
 
 ## Sampling interpretation
 
@@ -31,4 +37,4 @@ Additional repetitions would be justified if the research objective shifts towar
 
 ## Custom-harness boundary
 
-The custom harness participates as a black-box execution configuration in the public result surface. Its current public evidence includes correctness, verifier groups, timing, token/call telemetry, and workspace statistics. Raw private trajectories are not required for any current public route claim. If custom-harness route evidence becomes central, it should be exposed through a consistently specified normalized/redacted trace format rather than an ad hoc hand summary.
+The custom harness participates as a black-box execution configuration in the published result surface. Its evidence includes correctness, verifier groups, timing, token/call telemetry, and workspace statistics. Its implementation and raw trajectories remain private, so no public route-level claim is based on those private artifacts.

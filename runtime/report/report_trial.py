@@ -3,9 +3,11 @@
 
 Schema 0.3 deliberately keeps the normal report surface small. Harbor
 ``result.json`` is authoritative for outcome, verifier rewards, timings and
-normalized token/cost totals. A generic inference-call count may be accepted
-from Harbor agent metadata, a harness-provided ``smoke_telemetry.json`` sidecar,
-or Harbor's normalized ATIF trajectory. No native harness trajectory parsing,
+provider-reported cost. Generic inference-call counts may be accepted from
+Harbor agent metadata, a harness-provided ``smoke_telemetry.json`` sidecar, or
+Harbor's normalized ATIF trajectory. When normalized ATIF token metrics are
+available, completion/output and reasoning tokens are read from that interface
+so they remain separate. No native/private harness trajectory parsing,
 private reasoning extraction, tool-mix analysis, or edit-strategy inference is
 part of the public report path.
 """
@@ -104,6 +106,55 @@ def inference_calls_from_atif(path: Path) -> Optional[int]:
     return total if saw else None
 
 
+def token_usage_from_atif(path: Path) -> tuple[Optional[int], Optional[int]]:
+    """Read normalized non-reasoning completion and reasoning totals from ATIF.
+
+    ATIF is the public normalization boundary. Harness-native/private metrics
+    are intentionally not parsed here. Integrations that expose reasoning
+    separately should place non-reasoning completion tokens in
+    ``total_completion_tokens`` and reasoning in
+    ``final_metrics.extra.total_reasoning_tokens`` (or equivalent per-step
+    normalized metrics).
+    """
+    try:
+        data = load_json(path)
+    except Exception:
+        return None, None
+
+    final_metrics = data.get("final_metrics") or {}
+    output_tokens = _numeric(final_metrics.get("total_completion_tokens"))
+    final_extra = final_metrics.get("extra") or {}
+    reasoning_tokens = _numeric(final_extra.get("total_reasoning_tokens"))
+
+    step_output_total = 0
+    saw_step_output = False
+    step_reasoning_total = 0
+    saw_step_reasoning = False
+    for step in data.get("steps") or []:
+        metrics = (step or {}).get("metrics") or {}
+        completion = _numeric(metrics.get("completion_tokens"))
+        if completion is not None:
+            saw_step_output = True
+            step_output_total += completion
+
+        extra = metrics.get("extra") or {}
+        reasoning = None
+        details = extra.get("completion_tokens_details")
+        if isinstance(details, dict):
+            reasoning = _numeric(details.get("reasoning_tokens"))
+        if reasoning is None:
+            reasoning = _numeric(extra.get("reasoning_tokens"))
+        if reasoning is not None:
+            saw_step_reasoning = True
+            step_reasoning_total += reasoning
+
+    if output_tokens is None and saw_step_output:
+        output_tokens = step_output_total
+    if reasoning_tokens is None and saw_step_reasoning:
+        reasoning_tokens = step_reasoning_total
+    return output_tokens, reasoning_tokens
+
+
 def generic_inference_calls(trial_dir: Path, agent_result: dict[str, Any]) -> tuple[Optional[int], Optional[str]]:
     """Resolve architecture-neutral inference count with explicit provenance."""
     metadata = agent_result.get("metadata") or {}
@@ -161,6 +212,15 @@ def normalize_trial(trial_dir: Path) -> dict[str, Any]:
             uncached_input_tokens = raw_input_tokens - cached_tokens
 
     inference_calls, inference_source = generic_inference_calls(trial_dir, agent_result)
+
+    atif_path = first_existing(trial_dir / "agent", ["trajectory.json"])
+    atif_output_tokens = None
+    reasoning_tokens = None
+    if atif_path is not None:
+        atif_output_tokens, reasoning_tokens = token_usage_from_atif(atif_path)
+    output_tokens = atif_output_tokens
+    if output_tokens is None:
+        output_tokens = agent_result.get("n_output_tokens")
 
     verifier_groups = None
     group_artifact = first_existing(trial_dir, ["scenario_verifier_groups.json"])
@@ -222,7 +282,8 @@ def normalize_trial(trial_dir: Path) -> dict[str, Any]:
             "input_tokens": raw_input_tokens,
             "cached_tokens": cached_tokens,
             "uncached_input_tokens": uncached_input_tokens,
-            "output_tokens": agent_result.get("n_output_tokens"),
+            "output_tokens": output_tokens,
+            "reasoning_tokens": reasoning_tokens,
             "cost_usd": agent_result.get("cost_usd"),
         },
         "diagnostics": {
@@ -231,7 +292,7 @@ def normalize_trial(trial_dir: Path) -> dict[str, Any]:
         },
         "notes": {
             "report_boundary": "Compact public/quick-look report. Raw Harbor/native trajectories remain separate drill-down evidence.",
-            "telemetry_semantics": "input_tokens is Harbor's full prompt/context total when available; cached_tokens is a subset. inference_calls is optional and architecture-neutral; missing means unavailable, not zero.",
+            "telemetry_semantics": "input_tokens is Harbor's full prompt/context total when available; cached_tokens is a subset. output_tokens is non-reasoning completion output when normalized ATIF supplies the split; reasoning_tokens is separate and may be unavailable. inference_calls is optional and architecture-neutral; missing means unavailable, not zero.",
             "task_checksum_semantics": "Group cross-harness comparisons by logical task id, not runtime-bound Harbor checksum alone.",
         },
     }
@@ -269,6 +330,7 @@ def markdown(report: dict[str, Any]) -> str:
         f"| Cached input tokens | {fmt(m['cached_tokens'])} |",
         f"| Derived uncached input tokens | {fmt(m['uncached_input_tokens'])} |",
         f"| Output tokens | {fmt(m['output_tokens'])} |",
+        f"| Reasoning tokens | {fmt(m['reasoning_tokens'])} |",
         f"| Cost (USD) | {fmt(m['cost_usd'])} |",
         f"| Total seconds | {fmt(t['total_seconds'])} |",
         f"| Agent execution seconds | {fmt(t['agent_execution_seconds'])} |",
@@ -342,6 +404,7 @@ def flat_row(report: dict[str, Any]) -> dict[str, Any]:
         "cached_tokens": m["cached_tokens"],
         "uncached_input_tokens": m["uncached_input_tokens"],
         "output_tokens": m["output_tokens"],
+        "reasoning_tokens": m.get("reasoning_tokens"),
         "cost_usd": m["cost_usd"],
         "total_seconds": t["total_seconds"],
         "agent_execution_seconds": t["agent_execution_seconds"],

@@ -1,16 +1,16 @@
 # Scenario 1 repeated-run findings
 
-Scenario 1 studies a coordinated worker lifecycle change that also extracts Python event construction and worker JSON-Schema ownership. This document records trajectory-supported findings from repeated runs. It is updated as comparison cells are collected.
+Scenario 1 studies a coordinated worker lifecycle change that also extracts Python event construction and worker JSON-Schema ownership. This document records trajectory-supported findings from the retained Scenario 1 runs.
 
-## Comparison configuration
+## Recorded configuration
 
 Task: `agent-harness-smoke/batchline-worker-draining-event-extraction` version `0.2.0`.
 
-The recorded comparison uses GLM-5.3-Flash with a 600-second agent timeout and no additional per-harness token, step, or cost cap. OpenCode 1.18.30 and Mini-SWE-Agent 2.4.6 omit `reasoning_effort`, which GLM-5.3-Flash documents as defaulting to `max`; the custom Scenario 1 profile uses explicit `max`. Each harness cell contains two independent runs.
+The recorded runs use GLM-5.3-Flash with a 600-second agent timeout and no additional per-harness token, step, or cost cap. OpenCode 1.18.30 and Mini-SWE-Agent 2.4.6 omit `reasoning_effort`, which GLM-5.3-Flash documents as defaulting to `max`; the custom Scenario 1 profile uses explicit `max`. Each harness cell contains two independent runs.
 
-The recorded Scenario 1 matrix contains two runs each for OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and the custom harness. The recorded contract correction is verifier revision 2; verifier revision 3 subsequently adds edge-case regression guards without changing any recorded outcome. The original verifier and outcomes remain preserved. Public route-level analysis is complete for OpenCode and Mini-SWE. The custom harness is currently reported through outer outcomes and neutral telemetry; whether to publish a sanitized route trace is a separate evidence-surface decision.
+The recorded matrix contains two runs each for OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and the custom harness. Results use the current verifier (`r3`); the collection-time verifier is retained as provenance because it originally rejected one custom-harness workspace under an overconstrained schema-reference check. No agent execution was repeated for that correction.
 
-Verifier revision 2 is documented in [`docs/evaluation/scenario1_verifier_revision.md`](../../docs/evaluation/scenario1_verifier_revision.md). It changes only external acceptance logic, not any agent execution.
+OpenCode and Mini-SWE route analysis is supported by published trajectories. Custom-harness results are reported through outcome and run telemetry because its raw trajectory remains private. Verifier history is documented in [`docs/provenance/scenario1_verifier_history.md`](../../docs/provenance/scenario1_verifier_history.md).
 
 ## OpenCode 1.18.30: two-run cell
 
@@ -72,7 +72,7 @@ The cell also demonstrates why recovery type matters. Attempt 1 spends several l
 
 ## Mini-SWE-Agent 2.4.6: two-run cell
 
-The Mini-SWE cell contains one accepted run and one valid failing run. Both execute through the same Bash-only agent interface and the same 600-second agent timeout. The failing attempt remains part of the comparison rather than being replaced: Harbor records a normal sequence of model calls and shell executions until the declared agent budget is exhausted, and the post-timeout verifier identifies a remaining product defect.
+The Mini-SWE cell contains one accepted run and one valid failing run. Both execute through the same Bash-only agent interface and the same 600-second agent timeout. The failing attempt is retained rather than replaced: Harbor records a normal sequence of model calls and shell executions until the declared agent budget is exhausted, and the post-timeout verifier identifies a remaining product defect.
 
 | Attempt | Verifier | Total changed files | Text lines added | Text lines deleted | Inference calls | Uncached input | Output tokens | Agent execution |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -114,29 +114,20 @@ Shell composition creates additional interaction hazards worth recording. Concat
 The cell therefore provides evidence of an unstable completion boundary for Mini-SWE-Agent 2.4.6 on this scenario under the declared 600-second budget: one of two runs completes and passes, while the other reaches the budget after 47 model calls with one lifecycle invariant still unsatisfied. With two samples this should not be generalized into a harness-wide failure rate or ranking.
 
 
-## Custom harness: two-run cell and verifier correction
+## Custom harness: two-run cell
 
-The custom harness recorded two Scenario 1 runs with the same GLM-5.3-Flash model at explicit `reasoning_effort=max`. Attempt 1 used 25 inference calls, 92,051 uncached input tokens, 33,021 output tokens, and 304.5 seconds of agent execution; Attempt 2 used 32 calls, 100,287 uncached input tokens, 36,062 output tokens, and 340.1 seconds. Both changed 14 workspace paths. These metrics are descriptive and are not interpreted as an efficiency ranking because the harness exposes a different interaction interface and only two observations are available.
+The custom harness recorded two Scenario 1 runs with the same GLM-5.3-Flash model at explicit `reasoning_effort=max`. Attempt 1 used 25 inference calls, 92,051 uncached input tokens, 12,697 non-reasoning output tokens, 20,324 reasoning tokens, and 304.5 seconds of agent execution; Attempt 2 used 32 calls, 100,287 uncached input tokens, 16,567 non-reasoning output tokens, 19,495 reasoning tokens, and 340.1 seconds. Both changed 14 workspace paths. These measurements describe the recorded executions; the harness exposes a different interaction interface and its raw trajectory is not published.
 
-Attempt 1 originally failed only G5 under verifier revision 1. The aggregate schema retained same-named local `$defs` entries whose only schema behavior was an external `$ref` to `worker-events.schema.json`; the concrete worker schemas themselves had moved to the dedicated file. Revision 1 treated any remaining worker name in aggregate `$defs` as concrete ownership and also required direct external references in aggregate `oneOf`. The written contract required removal of concrete definitions and external worker-schema ownership but did not prohibit pure forwarding aliases.
+Custom Attempt 1 was rejected by the collection-time verifier because the aggregate schema retained pure forwarding aliases to definitions owned by `worker-events.schema.json`. The task contract required concrete worker-schema ownership to move to the dedicated schema but did not prohibit that forwarding layout. The current verifier evaluates ownership by substantive schema assertions rather than by one canonical reference shape, so the unchanged workspace passes G1-G6. The original result and verifier are retained as provenance.
 
-Verifier revision 2 therefore accepts direct external variants and pure forwarding aliases while continuing to reject local worker schema assertions. The Attempt-1 workspace was reconstructed from its preserved trajectory: revision 1 reproduced the original G5-only failure, and revision 2 passes G1-G6. Attempt 2 was already a revision-1 pass and remains a pass because revision 2 is relaxation-only. No custom agent run was repeated.
+This correction is evaluator history, not an additional agent attempt. It also differs from Mini-SWE Attempt 1, whose current workspace still violates the explicit lifecycle invariant checked by G1.
 
-This correction changes how Attempt 1 is interpreted: it is not evidence of a model requirement-retention failure. It is evidence that Scenario 1's original verifier encoded a narrower canonical JSON-Schema representation than the solver-facing contract required. The original result is retained as verifier-history evidence rather than silently overwritten.
-
-Route-level claims about the custom harness are deliberately limited here because its raw trajectory is not currently part of the public evidence surface. If custom interaction primitives become material to the research claims, a normalized or partially redacted route trace can be added later without exposing the private harness implementation.
-
-
-## Verifier-adjudication boundary
-
-Custom Attempt 1 is recorded with both its historical r1 outcome and its corrected r2+ interpretation. The result changed because the external evaluator had encoded a narrower JSON-Schema reference layout than the solver-visible contract required; the agent workspace itself was not rerun or modified for adjudication. Verifier r3 later adds two contract-visible edge guards—renamed concrete worker definitions and registry preservation fields—without changing any recorded Scenario 1 cell.
-
-This distinction is retained in the research record because a verifier-contract correction and an agent correctness failure are different kinds of evidence. Mini-SWE Attempt 1 remains a direct behavioral G1 failure, whereas Custom Attempt 1's original G5 failure is evaluator-history evidence.
+Because the custom trajectory is private, current public findings do not attribute specific route mechanisms to that harness. Its outcome and telemetry remain useful as black-box execution evidence.
 
 ## Current scope of interpretation
 
-Scenario 1 now contains three two-run harness cells under one fixed software target and model family. Under the current verifier interpretation, OpenCode and the custom harness each have two passing recorded workspaces; Mini-SWE has one pass and one valid failing timeout run with an unchanged G1 lifecycle defect. These counts are provenance, not harness scores.
+Scenario 1 now contains three two-run harness cells under one fixed software target and model family. Under the current verifier, OpenCode and the custom harness each have two passing recorded workspaces; Mini-SWE has one pass and one valid failing timeout run with an unchanged G1 lifecycle defect. These counts describe the retained observations.
 
-The evidence is intended for mechanism-level study: inspection and transformation primitives, route choice, requirement retention, recovery causes, context stewardship, verification behavior, affordance uptake, and completion boundaries. Two runs per harness can demonstrate recurrence or variation in observed routes but do not estimate stable success probabilities or justify product rankings.
+The evidence is intended for mechanism-level study: inspection and transformation primitives, route choice, requirement retention, recovery causes, context stewardship, verification behavior, affordance uptake, and completion boundaries. Two runs per harness can demonstrate recurrence or variation in observed routes but do not estimate stable success probabilities.
 
-OpenCode and Mini-SWE route claims are supported by retained public trajectories. Custom-harness conclusions currently remain at the black-box outcome/telemetry level unless a sanitized trajectory surface is later published.
+OpenCode and Mini-SWE route claims are supported by retained public trajectories. Custom-harness conclusions remain at the black-box outcome and telemetry level in the current evidence package.

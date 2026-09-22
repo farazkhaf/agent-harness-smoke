@@ -1,3 +1,0 @@
-harness,harness_version,attempt,reward,passed,inference_calls,uncached_input_tokens,output_tokens,agent_execution_seconds,workspace_changed_files_total,workspace_text_lines_added_total,workspace_text_lines_deleted_total
-mini-swe-agent,2.4.6,1,0.0,False,47,104467,60210,600.03691,14,802,383
-mini-swe-agent,2.4.6,2,1.0,True,43,92928,44405,426.569415,14,700,380

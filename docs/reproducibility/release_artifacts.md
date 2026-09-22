@@ -1,21 +1,13 @@
 # Release artifacts
 
-Agent Harness Smoke uses one source tree with two release surfaces.
+Agent Harness Smoke uses one canonical source tree for each release.
 
-## Core package
+## GitHub source release
 
-The core package contains the reusable software/evaluation layer plus neutral reference evidence:
+The version tag identifies the exact release tree. It contains the task/runtime/suite software, recorded results, published evidence, operational documentation, and active research layer. GitHub may expose automatically generated ZIP and tar archives for the tag.
 
-- `tasks/`, `runtime/`, and `suites/`;
-- normalized `results/`;
-- retained `evidence/`, including public trajectories where publishable and verifier revision history;
-- product-facing `docs/`;
-- root release/provenance files.
+## Zenodo archive
 
-It excludes `research/`. A user can run, validate, or inspect prior executions without adopting the study interpretation.
+The Zenodo software record archives the same tagged source tree for persistent citation. A release archive should be generated from the final tag (for example with `git archive`) so it excludes `.git`, untracked working files, caches, and local build artifacts.
 
-## Study snapshot
-
-The study snapshot contains the complete source tree, including `research/`. The research layer defines the formal study objective, research methods, and interpretive findings. It points back to the same tasks, results, and evidence rather than duplicating them.
-
-Keeping the evidence shared is deliberate: trajectories and verifier records can be useful both as software-validation references and as research sources. The separation is between **neutral evidence** and **interpretation**, not between two incompatible copies of the executions.
+Release-to-release changes are recorded in the top-level `CHANGELOG.md`.

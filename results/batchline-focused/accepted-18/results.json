@@ -8,7 +8,7 @@
   },
   "runs": [
     {
-      "trial": "withheld-private-run",
+      "trial": "private-run",
       "task": "agent-harness-smoke/batchline-extract-legacy-remote-provider",
       "harness": "custom-harness",
       "harness_version": "snapshot-1",
@@ -23,7 +23,8 @@
       "input_tokens": 417196,
       "cached_tokens": 346112,
       "uncached_input_tokens": 71084,
-      "output_tokens": 4389,
+      "output_tokens": 3049,
+      "reasoning_tokens": 1340,
       "cost_usd": 0.022894348,
       "total_seconds": 182.044317,
       "agent_execution_seconds": 72.501704,
@@ -49,6 +50,7 @@
       "cached_tokens": 288768,
       "uncached_input_tokens": 45424,
       "output_tokens": 7233,
+      "reasoning_tokens": 2993,
       "cost_usd": 0.019093139999999998,
       "total_seconds": 268.415652,
       "agent_execution_seconds": 126.809614,
@@ -74,6 +76,7 @@
       "cached_tokens": 176128,
       "uncached_input_tokens": 31075,
       "output_tokens": 2861,
+      "reasoning_tokens": 556,
       "cost_usd": 0.01165359,
       "total_seconds": 219.58178,
       "agent_execution_seconds": 103.927932,
@@ -83,7 +86,7 @@
       "primitive": "large contiguous move/module split"
     },
     {
-      "trial": "withheld-private-run",
+      "trial": "private-run",
       "task": "agent-harness-smoke/batchline-quarantine-rate-limit-events",
       "harness": "custom-harness",
       "harness_version": "snapshot-1",
@@ -98,7 +101,8 @@
       "input_tokens": 26219,
       "cached_tokens": 16384,
       "uncached_input_tokens": 9835,
-      "output_tokens": 762,
+      "output_tokens": 739,
+      "reasoning_tokens": 23,
       "cost_usd": 0.002331386,
       "total_seconds": 130.516815,
       "agent_execution_seconds": 21.399449,
@@ -124,6 +128,7 @@
       "cached_tokens": 51200,
       "uncached_input_tokens": 33084,
       "output_tokens": 3092,
+      "reasoning_tokens": 593,
       "cost_usd": 0.008044599999999999,
       "total_seconds": 132.033076,
       "agent_execution_seconds": 67.68237,
@@ -149,6 +154,7 @@
       "cached_tokens": 18432,
       "uncached_input_tokens": 12474,
       "output_tokens": 300,
+      "reasoning_tokens": 59,
       "cost_usd": 0.00260356,
       "total_seconds": 106.390268,
       "agent_execution_seconds": 42.481748,
@@ -158,7 +164,7 @@
       "primitive": "large line-oriented inspection/filtering"
     },
     {
-      "trial": "withheld-private-run",
+      "trial": "private-run",
       "task": "agent-harness-smoke/batchline-remove-legacy-remote-provider",
       "harness": "custom-harness",
       "harness_version": "snapshot-1",
@@ -173,7 +179,8 @@
       "input_tokens": 189023,
       "cached_tokens": 157696,
       "uncached_input_tokens": 31327,
-      "output_tokens": 1759,
+      "output_tokens": 1423,
+      "reasoning_tokens": 336,
       "cost_usd": 0.010151734,
       "total_seconds": 99.876945,
       "agent_execution_seconds": 32.557718,
@@ -199,6 +206,7 @@
       "cached_tokens": 276480,
       "uncached_input_tokens": 60961,
       "output_tokens": 4224,
+      "reasoning_tokens": 969,
       "cost_usd": 0.01955055,
       "total_seconds": 180.19367,
       "agent_execution_seconds": 113.346655,
@@ -224,6 +232,7 @@
       "cached_tokens": 258048,
       "uncached_input_tokens": 38739,
       "output_tokens": 1218,
+      "reasoning_tokens": 3571,
       "cost_usd": 0.01594679,
       "total_seconds": 272.048234,
       "agent_execution_seconds": 184.032857,
@@ -233,7 +242,7 @@
       "primitive": "large contiguous deletion"
     },
     {
-      "trial": "withheld-private-run",
+      "trial": "private-run",
       "task": "agent-harness-smoke/batchline-selective-retry-policies",
       "harness": "custom-harness",
       "harness_version": "snapshot-1",
@@ -248,7 +257,8 @@
       "input_tokens": 80936,
       "cached_tokens": 59392,
       "uncached_input_tokens": 21544,
-      "output_tokens": 1183,
+      "output_tokens": 878,
+      "reasoning_tokens": 305,
       "cost_usd": 0.005545468,
       "total_seconds": 130.29041,
       "agent_execution_seconds": 25.341001,
@@ -274,6 +284,7 @@
       "cached_tokens": 36864,
       "uncached_input_tokens": 26472,
       "output_tokens": 962,
+      "reasoning_tokens": 132,
       "cost_usd": 0.00555772,
       "total_seconds": 252.19425,
       "agent_execution_seconds": 51.214645,
@@ -299,6 +310,7 @@
       "cached_tokens": 116736,
       "uncached_input_tokens": 22291,
       "output_tokens": 1205,
+      "reasoning_tokens": 314,
       "cost_usd": 0.007605229999999999,
       "total_seconds": 184.993875,
       "agent_execution_seconds": 73.255056,
@@ -308,7 +320,7 @@
       "primitive": "selective repeated edit"
     },
     {
-      "trial": "withheld-private-run",
+      "trial": "private-run",
       "task": "agent-harness-smoke/batchline-shared-event-sequence-regression",
       "harness": "custom-harness",
       "harness_version": "snapshot-1",
@@ -323,7 +335,8 @@
       "input_tokens": 134510,
       "cached_tokens": 110592,
       "uncached_input_tokens": 23918,
-      "output_tokens": 1924,
+      "output_tokens": 1578,
+      "reasoning_tokens": 346,
       "cost_usd": 0.007756868,
       "total_seconds": 165.95332,
       "agent_execution_seconds": 50.694254,
@@ -349,6 +362,7 @@
       "cached_tokens": 96256,
       "uncached_input_tokens": 25299,
       "output_tokens": 4139,
+      "reasoning_tokens": 764,
       "cost_usd": 0.00875203,
       "total_seconds": 241.186141,
       "agent_execution_seconds": 128.787216,
@@ -374,6 +388,7 @@
       "cached_tokens": 161792,
       "uncached_input_tokens": 29955,
       "output_tokens": 1186,
+      "reasoning_tokens": 1262,
       "cost_usd": 0.010571009999999999,
       "total_seconds": 230.769777,
       "agent_execution_seconds": 110.861431,
@@ -383,7 +398,7 @@
       "primitive": "same-process behavioral verification with constrained regression artifact"
     },
     {
-      "trial": "withheld-private-run",
+      "trial": "private-run",
       "task": "agent-harness-smoke/batchline-submitted-by",
       "harness": "custom-harness",
       "harness_version": "snapshot-1",
@@ -398,7 +413,8 @@
       "input_tokens": 61661,
       "cached_tokens": 43008,
       "uncached_input_tokens": 18653,
-      "output_tokens": 1595,
+      "output_tokens": 1344,
+      "reasoning_tokens": 251,
       "cost_usd": 0.004842682,
       "total_seconds": 139.432765,
       "agent_execution_seconds": 29.107523,
@@ -424,6 +440,7 @@
       "cached_tokens": 112640,
       "uncached_input_tokens": 30928,
       "output_tokens": 3356,
+      "reasoning_tokens": 1034,
       "cost_usd": 0.009696399999999999,
       "total_seconds": 190.914539,
       "agent_execution_seconds": 88.081579,
@@ -449,6 +466,7 @@
       "cached_tokens": 100352,
       "uncached_input_tokens": 20703,
       "output_tokens": 1398,
+      "reasoning_tokens": 448,
       "cost_usd": 0.00703901,
       "total_seconds": 185.930099,
       "agent_execution_seconds": 83.366929,
@@ -472,7 +490,8 @@
       "median_inference_calls": 22,
       "median_input_tokens": 417196,
       "median_cached_tokens": 346112,
-      "median_output_tokens": 4389,
+      "median_output_tokens": 3049,
+      "median_reasoning_tokens": 1340,
       "median_cost_usd": 0.022894348,
       "median_total_seconds": 182.044317
     },
@@ -490,6 +509,7 @@
       "median_input_tokens": 334192,
       "median_cached_tokens": 288768,
       "median_output_tokens": 7233,
+      "median_reasoning_tokens": 2993,
       "median_cost_usd": 0.019093139999999998,
       "median_total_seconds": 268.415652
     },
@@ -507,6 +527,7 @@
       "median_input_tokens": 207203,
       "median_cached_tokens": 176128,
       "median_output_tokens": 2861,
+      "median_reasoning_tokens": 556,
       "median_cost_usd": 0.01165359,
       "median_total_seconds": 219.58178
     },
@@ -523,7 +544,8 @@
       "median_inference_calls": 4,
       "median_input_tokens": 26219,
       "median_cached_tokens": 16384,
-      "median_output_tokens": 762,
+      "median_output_tokens": 739,
+      "median_reasoning_tokens": 23,
       "median_cost_usd": 0.002331386,
       "median_total_seconds": 130.516815
     },
@@ -541,6 +563,7 @@
       "median_input_tokens": 84284,
       "median_cached_tokens": 51200,
       "median_output_tokens": 3092,
+      "median_reasoning_tokens": 593,
       "median_cost_usd": 0.008044599999999999,
       "median_total_seconds": 132.033076
     },
@@ -558,6 +581,7 @@
       "median_input_tokens": 30906,
       "median_cached_tokens": 18432,
       "median_output_tokens": 300,
+      "median_reasoning_tokens": 59,
       "median_cost_usd": 0.00260356,
       "median_total_seconds": 106.390268
     },
@@ -574,7 +598,8 @@
       "median_inference_calls": 12,
       "median_input_tokens": 189023,
       "median_cached_tokens": 157696,
-      "median_output_tokens": 1759,
+      "median_output_tokens": 1423,
+      "median_reasoning_tokens": 336,
       "median_cost_usd": 0.010151734,
       "median_total_seconds": 99.876945
     },
@@ -592,6 +617,7 @@
       "median_input_tokens": 337441,
       "median_cached_tokens": 276480,
       "median_output_tokens": 4224,
+      "median_reasoning_tokens": 969,
       "median_cost_usd": 0.01955055,
       "median_total_seconds": 180.19367
     },
@@ -609,6 +635,7 @@
       "median_input_tokens": 296787,
       "median_cached_tokens": 258048,
       "median_output_tokens": 1218,
+      "median_reasoning_tokens": 3571,
       "median_cost_usd": 0.01594679,
       "median_total_seconds": 272.048234
     },
@@ -625,7 +652,8 @@
       "median_inference_calls": 7,
       "median_input_tokens": 80936,
       "median_cached_tokens": 59392,
-      "median_output_tokens": 1183,
+      "median_output_tokens": 878,
+      "median_reasoning_tokens": 305,
       "median_cost_usd": 0.005545468,
       "median_total_seconds": 130.29041
     },
@@ -643,6 +671,7 @@
       "median_input_tokens": 63336,
       "median_cached_tokens": 36864,
       "median_output_tokens": 962,
+      "median_reasoning_tokens": 132,
       "median_cost_usd": 0.00555772,
       "median_total_seconds": 252.19425
     },
@@ -660,6 +689,7 @@
       "median_input_tokens": 139027,
       "median_cached_tokens": 116736,
       "median_output_tokens": 1205,
+      "median_reasoning_tokens": 314,
       "median_cost_usd": 0.007605229999999999,
       "median_total_seconds": 184.993875
     },
@@ -676,7 +706,8 @@
       "median_inference_calls": 12,
       "median_input_tokens": 134510,
       "median_cached_tokens": 110592,
-      "median_output_tokens": 1924,
+      "median_output_tokens": 1578,
+      "median_reasoning_tokens": 346,
       "median_cost_usd": 0.007756868,
       "median_total_seconds": 165.95332
     },
@@ -694,6 +725,7 @@
       "median_input_tokens": 121555,
       "median_cached_tokens": 96256,
       "median_output_tokens": 4139,
+      "median_reasoning_tokens": 764,
       "median_cost_usd": 0.00875203,
       "median_total_seconds": 241.186141
     },
@@ -711,6 +743,7 @@
       "median_input_tokens": 191747,
       "median_cached_tokens": 161792,
       "median_output_tokens": 1186,
+      "median_reasoning_tokens": 1262,
       "median_cost_usd": 0.010571009999999999,
       "median_total_seconds": 230.769777
     },
@@ -727,7 +760,8 @@
       "median_inference_calls": 6,
       "median_input_tokens": 61661,
       "median_cached_tokens": 43008,
-      "median_output_tokens": 1595,
+      "median_output_tokens": 1344,
+      "median_reasoning_tokens": 251,
       "median_cost_usd": 0.004842682,
       "median_total_seconds": 139.432765
     },
@@ -745,6 +779,7 @@
       "median_input_tokens": 143568,
       "median_cached_tokens": 112640,
       "median_output_tokens": 3356,
+      "median_reasoning_tokens": 1034,
       "median_cost_usd": 0.009696399999999999,
       "median_total_seconds": 190.914539
     },
@@ -762,6 +797,7 @@
       "median_input_tokens": 121055,
       "median_cached_tokens": 100352,
       "median_output_tokens": 1398,
+      "median_reasoning_tokens": 448,
       "median_cost_usd": 0.00703901,
       "median_total_seconds": 185.930099
     }

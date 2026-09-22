@@ -8,4 +8,4 @@ Expected author checks before collection:
 
 This task is an additive focused-suite task. It does not require rerunning previously completed focused-task cells.
 
-Canonical focused-task status: accepted as V1 after one passing run each from OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and `custom-harness` snapshot-1. No solver-facing instruction, verifier, environment, or oracle content changed between the executed RC1 package and the promoted 0.1.0 task; only release metadata/documentation changed.
+Canonical focused-task status: accepted after one passing run each from OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and `custom-harness` snapshot-1.

@@ -1,0 +1,147 @@
+--- verifier-r1/verify.py
++++ verifier-r3/verify.py
+@@ -33,6 +33,14 @@
+     "WorkerRateLimitedEvent",
+     "WorkerDrainingEvent",
+     "WorkerResumedEvent",
++}
++
++REQUIRED_WORKER_EVENT_TYPES = {
++    "worker.heartbeat",
++    "worker.unavailable",
++    "worker.rate_limited",
++    "worker.draining",
++    "worker.resumed",
+ }
+
+
+@@ -153,11 +161,19 @@
+     if not callable(getattr(registry, "drain", None)) or not callable(getattr(registry, "resume", None)):
+         raise CheckFailure("WorkerRegistry must expose drain(name, reason) and resume(name)")
+     stored_drained = registry.drain(snapshot.name, "maintenance")
+-    require(registry.get(snapshot.name) is stored_drained, "registry.drain() must replace the stored snapshot and return it")
++    registered_drained = registry.get(snapshot.name)
+     require(stored_drained.draining and stored_drained.drain_reason == "maintenance", "registry.drain() returned incorrect state")
++    require(registered_drained.draining and registered_drained.drain_reason == "maintenance", "registry.drain() did not update the stored snapshot")
++    for attr in ("name", "service", "queue", "last_seen_at", "active_jobs", "capacity"):
++        require(getattr(stored_drained, attr) == getattr(snapshot, attr), f"registry.drain() returned snapshot changed preserved field {attr}")
++        require(getattr(registered_drained, attr) == getattr(snapshot, attr), f"registry.drain() stored snapshot changed preserved field {attr}")
+     stored_resumed = registry.resume(snapshot.name)
+-    require(registry.get(snapshot.name) is stored_resumed, "registry.resume() must replace the stored snapshot and return it")
++    registered_resumed = registry.get(snapshot.name)
+     require(not stored_resumed.draining and stored_resumed.drain_reason is None, "registry.resume() returned incorrect state")
++    require(not registered_resumed.draining and registered_resumed.drain_reason is None, "registry.resume() did not update the stored snapshot")
++    for attr in ("name", "service", "queue", "last_seen_at", "active_jobs", "capacity"):
++        require(getattr(stored_resumed, attr) == getattr(snapshot, attr), f"registry.resume() returned snapshot changed preserved field {attr}")
++        require(getattr(registered_resumed, attr) == getattr(snapshot, attr), f"registry.resume() stored snapshot changed preserved field {attr}")
+
+
+ def group_capacity_health() -> None:
+@@ -295,6 +311,36 @@
+     require(suffixes[1] == suffixes[0] + 1 and suffixes[2] == suffixes[1] + 1, f"worker/non-worker event constructors no longer share one event-id sequence: {ids}")
+
+
++def _worker_schema_ref_matches(ref: object, name: str) -> bool:
++    return isinstance(ref, str) and ref.endswith(f"worker-events.schema.json#/$defs/{name}")
++
++
++def _is_pure_worker_forwarding_alias(definition: object, name: str) -> bool:
++    """Return True for a local $defs entry that only forwards ownership externally.
++
++    JSON Schema annotations do not assert worker-event structure, so they may
++    accompany the forwarding $ref without making the aggregate schema the
++    concrete owner of the definition.
++    """
++    if not isinstance(definition, dict):
++        return False
++    if not _worker_schema_ref_matches(definition.get("$ref"), name):
++        return False
++    allowed = {"$ref", "$comment", "title", "description", "default", "examples", "deprecated", "readOnly", "writeOnly"}
++    return set(definition) <= allowed
++
++
++def _aggregate_reaches_worker_definition(schema: dict, name: str) -> bool:
++    """Accept a direct external variant or a local pure forwarding alias."""
++    refs = [item.get("$ref") for item in schema.get("oneOf", []) if isinstance(item, dict)]
++    if any(_worker_schema_ref_matches(ref, name) for ref in refs):
++        return True
++    local_ref = f"#/$defs/{name}"
++    if local_ref not in refs:
++        return False
++    return _is_pure_worker_forwarding_alias(schema.get("$defs", {}).get(name), name)
++
++
+ def group_event_contract() -> None:
+     fresh_imports()
+     import batchline.events.encoder as encoder
+@@ -328,22 +374,39 @@
+     Draft202012Validator.check_schema(schema)
+     Draft202012Validator.check_schema(worker_schema)
+
+-    root_defs = set(schema.get("$defs", {}))
++    root_definitions = schema.get("$defs", {})
++    root_defs = set(root_definitions)
+     worker_defs = set(worker_schema.get("$defs", {}))
+-    require(not (REQUIRED_WORKER_SCHEMA_DEFS & root_defs), "aggregate schema still owns concrete worker event definitions")
++    concrete_local_worker_defs = [
++        name for name in REQUIRED_WORKER_SCHEMA_DEFS
++        if name in root_definitions and not _is_pure_worker_forwarding_alias(root_definitions[name], name)
++    ]
++    require(
++        not concrete_local_worker_defs,
++        f"aggregate schema retains concrete worker event definitions: {sorted(concrete_local_worker_defs)}",
++    )
+     require(REQUIRED_WORKER_SCHEMA_DEFS <= worker_defs, f"dedicated worker schema is missing definitions: {sorted(REQUIRED_WORKER_SCHEMA_DEFS - worker_defs)}")
+     root_event_types = set()
++    concrete_worker_event_types = set()
+     for definition in schema.get("$defs", {}).values():
+         if isinstance(definition, dict):
+             event_type = definition.get("properties", {}).get("event_type", {})
+             if isinstance(event_type, dict) and isinstance(event_type.get("const"), str):
+-                root_event_types.add(event_type["const"])
++                value = event_type["const"]
++                root_event_types.add(value)
++                if value in REQUIRED_WORKER_EVENT_TYPES:
++                    concrete_worker_event_types.add(value)
++    require(
++        not concrete_worker_event_types,
++        f"aggregate schema retains concrete worker event definitions under local names: {sorted(concrete_worker_event_types)}",
++    )
+     require({"job.queued", "job.started", "job.succeeded", "job.failed", "job.canceled", "job.retry_scheduled", "service.config_loaded", "service.config_rejected"} <= root_event_types, "aggregate schema no longer owns required job/service event definitions")
+
+-    root_refs = [item.get("$ref") for item in schema.get("oneOf", []) if isinstance(item, dict) and isinstance(item.get("$ref"), str)]
+     for name in REQUIRED_WORKER_SCHEMA_DEFS:
+-        suffix = f"worker-events.schema.json#/$defs/{name}"
+-        require(any(ref.endswith(suffix) for ref in root_refs), f"aggregate schema does not reference dedicated {name}")
++        require(
++            _aggregate_reaches_worker_definition(schema, name),
++            f"aggregate worker variant does not resolve to dedicated {name}",
++        )
+
+     heartbeat_payload_schema = worker_schema["$defs"]["WorkerHeartbeatEvent"]["properties"]["payload"]
+     require("draining" in heartbeat_payload_schema["properties"], "heartbeat schema does not accept draining")
+@@ -351,9 +414,11 @@
+     validate_event(heartbeat)
+     validate_event(ordinary_heartbeat)
+
+-    legacy = json.loads(LEGACY_HEARTBEAT.read_text(encoding="utf-8"))
+-    require("draining" not in legacy["payload"], "legacy heartbeat fixture unexpectedly contains draining")
++    legacy = json.loads(json.dumps(ordinary_heartbeat))
++    legacy["payload"].pop("draining", None)
+     validate_event(legacy)
++    if LEGACY_HEARTBEAT.exists():
++        validate_event(json.loads(LEGACY_HEARTBEAT.read_text(encoding="utf-8")))
+
+     derived = worker_draining_event(drained, occurred_at=snapshot.last_seen_at).to_dict()
+     require(derived["payload"]["reason"] == "rolling-restart", "draining event must derive reason from a drained snapshot when omitted")
+@@ -446,10 +511,6 @@
+     validate_event(limited)
+     validate_event(unavailable)
+
+-    direct_worker_validator = Draft202012Validator(worker_schema)
+-    for event in (heartbeat, ordinary_heartbeat, derived, matching_explicit, resumed_event, limited, unavailable):
+-        errors = list(direct_worker_validator.iter_errors(event))
+-        require(not errors, f"dedicated worker schema does not validate {event['event_type']} independently: {errors[0].message if errors else ''}")
+
+
+ def group_integration_preservation() -> None:

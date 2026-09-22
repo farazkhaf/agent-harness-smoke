@@ -84,6 +84,7 @@ def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "median_input_tokens": median_or_none([r["input_tokens"] for r in group]),
             "median_cached_tokens": median_or_none([r["cached_tokens"] for r in group]),
             "median_output_tokens": median_or_none([r["output_tokens"] for r in group]),
+            "median_reasoning_tokens": median_or_none([r.get("reasoning_tokens") for r in group]),
             "median_cost_usd": median_or_none([r["cost_usd"] for r in group]),
             "median_total_seconds": median_or_none([r["total_seconds"] for r in group]),
         })
@@ -128,35 +129,35 @@ def markdown(suite: dict[str, Any], rows: list[dict[str, Any]], summary: list[di
         "",
         suite.get("description", ""),
         "",
-        "> Compact suite report only. Raw Harbor/native trajectories remain separate drill-down artifacts and are not interpreted here. Calls/tokens/cost/time are descriptive route/resource telemetry; smaller wall time is not treated as inherently better.",
+        "> Compact suite report only. Raw Harbor/native trajectories remain separate drill-down artifacts and are not interpreted here. Output and reasoning tokens are reported separately when normalized telemetry provides the split; calls/tokens/cost/time are descriptive route/resource telemetry, and smaller wall time is not treated as inherently better.",
         "",
         "## Runs",
         "",
-        "| Task | Harness | Attempt | Reward | Verifier groups | Calls | Input | Cached | Output | Cost USD | Total s |",
-        "|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|",
+        "| Task | Harness | Attempt | Reward | Verifier groups | Calls | Input | Cached | Output | Reasoning | Cost USD | Total s |",
+        "|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for r in rows:
         lines.append(
             f"| `{r['task']}` | `{r['harness']}` | {md_value(r.get('attempt'))} | {md_value(r['reward'])} | {scenario_group_summary(r.get('verifier_groups')) if r.get('verifier_groups') else reward_groups(r.get('verifier_rewards'))} | {md_value(r['inference_calls'])} | "
-            f"{md_value(r['input_tokens'])} | {md_value(r['cached_tokens'])} | {md_value(r['output_tokens'])} | "
+            f"{md_value(r['input_tokens'])} | {md_value(r['cached_tokens'])} | {md_value(r['output_tokens'])} | {md_value(r.get('reasoning_tokens'))} | "
             f"{md_value(r['cost_usd'])} | {md_value(r['total_seconds'])} |"
         )
     if not rows:
-        lines.append("| — | — | — | — | — | — | — | — | — | — | — |")
+        lines.append("| — | — | — | — | — | — | — | — | — | — | — | — |")
 
     if any(s["runs"] > 1 for s in summary):
         lines += [
             "",
             "## Repeated-run aggregates",
             "",
-            "| Task | Harness | Runs | Pass rate | Median reward | Median calls | Median input | Median output | Median cost |",
-            "|---|---|---:|---:|---:|---:|---:|---:|---:|",
+            "| Task | Harness | Runs | Pass rate | Median reward | Median calls | Median input | Median output | Median reasoning | Median cost |",
+            "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
         for s in summary:
             lines.append(
                 f"| `{s['task']}` | `{s['harness']}` | {s['runs']} | {s['pass_rate']:.2f} | "
                 f"{md_value(s['median_reward'])} | {md_value(s['median_inference_calls'])} | "
-                f"{md_value(s['median_input_tokens'])} | {md_value(s['median_output_tokens'])} | {md_value(s['median_cost_usd'])} |"
+                f"{md_value(s['median_input_tokens'])} | {md_value(s['median_output_tokens'])} | {md_value(s['median_reasoning_tokens'])} | {md_value(s['median_cost_usd'])} |"
             )
     return "\n".join(lines) + "\n"
 
@@ -169,7 +170,7 @@ def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
         "workspace_changed_files_total", "workspace_untracked_text_lines_added",
         "workspace_text_lines_added_total", "workspace_text_lines_deleted_total",
         "inference_calls", "input_tokens", "cached_tokens", "uncached_input_tokens",
-        "output_tokens", "cost_usd", "total_seconds", "agent_execution_seconds",
+        "output_tokens", "reasoning_tokens", "cost_usd", "total_seconds", "agent_execution_seconds",
     ]
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")

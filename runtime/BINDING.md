@@ -1,17 +1,16 @@
 # Runtime binding
 
-The public harness images contain the expensive harness installation and are reused across canonical tasks. Each task remains agent-agnostic and owns its repository/setup requirements.
+Canonical tasks are agent-agnostic. A reusable preinstalled harness is installed once in a version-pinned runtime image and bound to a task only for the duration of a run.
 
-## Invariants
+## Binding contract
 
-- Mini-SWE/OpenCode are installed once in version-pinned runtime images.
-- Thin Harbor wrappers verify/use those installations rather than reinstalling the harness for every task.
-- Canonical Harbor tasks remain standalone task packages.
-- Repository preparation lives in `environment/setup/setup.sh`.
-- `runtime/bind_task.py` creates an ephemeral bound task by changing only the Dockerfile's `HARNESS_SMOKE_BASE_IMAGE` default and adding binding metadata.
-- Agent-specific task copies are not maintained in the repository.
+- task packages own repository content and setup requirements;
+- runtime profiles identify the preinstalled agent image and Harbor integration;
+- `runtime/bind_task.py` creates an ephemeral task copy and changes only the Dockerfile's `HARNESS_SMOKE_BASE_IMAGE` default;
+- binding metadata is written to `.harness-smoke-binding.json`;
+- agent-specific task copies are not maintained.
 
-## Canonical environment convention
+Canonical task Dockerfiles follow this pattern:
 
 ```dockerfile
 ARG HARNESS_SMOKE_BASE_IMAGE=<standalone default>
@@ -23,7 +22,9 @@ COPY setup/ /tmp/harness-smoke-repo-setup/
 RUN /tmp/harness-smoke-repo-setup/setup.sh
 ```
 
-## Run examples
+The included Mini-SWE and OpenCode integrations demonstrate the pattern. Additional cached/preinstalled agents can add their own image, wrapper, and runtime profile and then use the same binder and suite runner. External Harbor agents can bypass image binding entirely; see `docs/reproducibility/adding_harnesses.md`.
+
+## Examples
 
 ```powershell
 .\runtime\scripts\run-mini-swe-preinstalled.ps1 `
@@ -33,4 +34,4 @@ RUN /tmp/harness-smoke-repo-setup/setup.sh
   -TaskPath "tasks\batchline-submitted-by"
 ```
 
-Use `-KeepResolvedTask` only when inspecting/debugging the generated temporary binding.
+Use `-KeepResolvedTask` only when inspecting the generated temporary binding.

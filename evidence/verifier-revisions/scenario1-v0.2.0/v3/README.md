@@ -1,16 +1,7 @@
-# Verifier revision 3
+# Scenario 1 verifier r3
 
-Revision 3 preserves the r2 contract correction and adds two regression guards derived from the same behavior/explicit-structure verifier philosophy.
+Revision `r3` is the current verifier for Scenario 1 task version `0.2.0`.
 
-- A concrete worker event definition remaining in aggregate `$defs` fails even if the definition is renamed.
-- Registry drain/resume returned and stored snapshots must preserve the fields explicitly named in the task contract.
-- A direct external worker `$ref` may carry a harmless sibling such as `"type": "object"`; r3 does not require a bare-reference canonical form.
+It accepts equivalent schema-reference layouts when concrete worker schema ownership resides in `worker-events.schema.json`, while continuing to reject concrete worker definitions retained in the aggregate schema. It also checks the drain/resume preservation fields stated by the task without requiring Python object identity.
 
-No recorded Scenario 1 workspace uses either newly guarded edge case, so recorded r2 outcomes remain unchanged. No agent run was repeated for r3.
-
-Included regression artifacts:
-
-- `oracle-verifier.json` — author solution passes G1-G6.
-- `direct-external-ref-with-type.json` — passes.
-- `renamed-concrete-definition.json` — G5 fails.
-- `altered-registry-return.json` — G1/G2 fail because physical capacity is not preserved.
+Regression controls in this directory cover the author solution, a direct external `$ref` with a harmless `type: object` sibling, a renamed concrete worker definition, and an altered registry return.

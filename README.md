@@ -1,52 +1,60 @@
 # Agent Harness Smoke
 
-Agent Harness Smoke is a Harbor-native diagnostic suite for studying and validating how coding-agent harnesses interact with software workspaces under controlled task and model conditions. It is designed around **tightly specified software targets with unconstrained execution routes** rather than a global agent or harness leaderboard.
+Agent Harness Smoke is a Harbor-native diagnostic suite for exercising coding-agent workspace interaction under controlled software tasks. Each task defines a reproducible starting repository and an explicit software contract while leaving the execution route unconstrained.
 
-Version 0.2.0 contains six deterministic focused tasks plus Scenario 1 (`batchline-worker-draining-event-extraction`). The reusable product layer, retained execution evidence, and interpretive research layer are kept distinct inside the same repository.
+Version 0.2.1 includes six focused tasks, one composed scenario, reusable runtime binding for preinstalled and external Harbor agents, normalized reporting, retained reference evidence, and an active research layer.
 
-## Repository layers
+## Repository layout
 
-- `tasks/`, `runtime/`, `suites/` — reusable software/evaluation layer.
-- `results/` — normalized reference results and verifier-group outcomes.
-- `evidence/` — retained execution evidence, verifier history, and provenance.
-- `docs/` — product-facing evaluation, reproducibility, and provenance documentation.
-- `research/` — study objective, research methods, and interpretive findings.
+- `tasks/` contains the Harbor task packages and task-specific design and validation records.
+- `runtime/` contains reusable agent integration, task binding, reporting, and suite utilities.
+- `suites/` contains the focused suite and Scenario 1 suite definitions.
+- `results/` contains recorded result summaries.
+- `evidence/` contains published trajectories, receipts, verifier output, and evaluator provenance.
+- `docs/` contains usage, evaluation, reproducibility, and software provenance documentation.
+- `research/` contains the study objective, methods, task-design source index, and findings.
 
-The evidence layer is intentionally shared: prior trajectories and verifier records can help validate or understand a task without requiring users to reproduce the same expensive run, while research claims remain isolated under `research/`.
+## Focused tasks
 
-## Focused suite
-
-| Family | Task ID | Interaction pressure | Task version |
+| Family | Task | Interaction pressure | Version |
 |---|---|---|---|
-| B1 | `agent-harness-smoke/batchline-submitted-by` | coordinated multi-file modification | 0.1.0 |
-| R1 | `agent-harness-smoke/batchline-selective-retry-policies` | selective repeated editing | 0.1.0 |
-| R2 | `agent-harness-smoke/batchline-remove-legacy-remote-provider` | substantial contiguous deletion | 0.1.1 |
-| R3 | `agent-harness-smoke/batchline-quarantine-rate-limit-events` | large line-oriented inspection/filtering | 0.1.1 |
-| R4 | `agent-harness-smoke/batchline-extract-legacy-remote-provider` | substantial move/module split | 0.1.0 |
-| V1 | `agent-harness-smoke/batchline-shared-event-sequence-regression` | same-process behavioral verification | 0.1.0 |
+| B1 | `batchline-submitted-by` | coordinated multi-file modification | 0.1.0 |
+| R1 | `batchline-selective-retry-policies` | selective repeated editing | 0.1.0 |
+| R2 | `batchline-remove-legacy-remote-provider` | substantial contiguous deletion | 0.1.1 |
+| R3 | `batchline-quarantine-rate-limit-events` | large line-oriented inspection/filtering | 0.1.1 |
+| R4 | `batchline-extract-legacy-remote-provider` | substantial move/module split | 0.1.0 |
+| V1 | `batchline-shared-event-sequence-regression` | same-process behavioral verification | 0.1.0 |
 
-The focused `accepted-18` checkpoint contains six tasks across OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and a custom harness snapshot. All 18 recorded focused runs satisfy their task contracts. Historical focused reasoning configuration differs for the custom harness and is disclosed in provenance.
+The recorded focused checkpoint contains 18 accepted executions across OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and `custom-harness` snapshot-1. See [`RESULTS.md`](RESULTS.md).
 
 ## Scenario 1
 
-Scenario 1 is a separate composed maintenance task at solver-visible task version `0.2.0`. It has two recorded runs each for OpenCode, Mini-SWE-Agent, and the custom harness. Verifier revisions are versioned independently from the solver-visible task. Revision 1 is the collection-time evaluator; revision 2 corrected an overconstrained forwarding-alias interpretation; revision 3 adds contract-visible edge guards without changing any recorded Scenario 1 outcome.
+`batchline-worker-draining-event-extraction` composes coordinated lifecycle work with Python extraction, JSON-Schema extraction, and constrained verification. Two recorded executions are retained for each of the three harness configurations. Recorded Scenario 1 results use verifier revision `r3`; the collection-time evaluator is retained separately because one recorded workspace required verifier adjudication without an agent rerun.
 
-See [`RESULTS.md`](RESULTS.md) for reference outcomes, [`docs/evaluation/scenario1_verifier_revision.md`](docs/evaluation/scenario1_verifier_revision.md) for verifier history, and [`research/scenario-1/FINDINGS.md`](research/scenario-1/FINDINGS.md) for interpretation.
+See [`results/batchline-scenarios/scenario1/`](results/batchline-scenarios/scenario1/) and [`docs/provenance/scenario1_verifier_history.md`](docs/provenance/scenario1_verifier_history.md).
 
-## Documentation
+## Research layer
 
-- [`docs/evaluation/methodology.md`](docs/evaluation/methodology.md) — product/evaluation model.
-- [`docs/evaluation/task_design.md`](docs/evaluation/task_design.md) — task and verifier design boundaries.
-- [`docs/evaluation/scenario1_run_protocol.md`](docs/evaluation/scenario1_run_protocol.md) — Scenario 1 execution protocol.
-- [`docs/reproducibility/`](docs/reproducibility/) — build, run, evidence, and privacy guidance.
-- [`evidence/README.md`](evidence/README.md) — retained evidence layout.
-- [`research/STUDY_OBJECTIVE.md`](research/STUDY_OBJECTIVE.md) — formal research objective.
+The study asks how coding-agent harnesses mediate realized software-engineering interaction routes: which workspace primitives are selected, how inspection and transformation are composed, where requirement retention and recovery appear, and how harness affordances are used or substituted. Correctness anchors each trajectory against a common task contract; the current evidence supports descriptive route and failure analysis rather than stable harness-wide reliability, speed, or cost rankings.
 
-## Citation
+See [`research/STUDY_OBJECTIVE.md`](research/STUDY_OBJECTIVE.md), [`research/METHODS.md`](research/METHODS.md), [`research/TASK_DESIGN_SOURCES.md`](research/TASK_DESIGN_SOURCES.md), and [`research/scenario-1/FINDINGS.md`](research/scenario-1/FINDINGS.md).
 
-Agent Harness Smoke v0.2.0 is archived on Zenodo under DOI [`10.5281/zenodo.22895191`](https://doi.org/10.5281/zenodo.22895191). Citation metadata is provided in [`CITATION.cff`](CITATION.cff).
+## Harness integration
 
-## Quick run
+The included OpenCode and Mini-SWE profiles are reference integrations, not a closed set. The suite runner supports two extension paths:
+
+- `preinstalled`: bind an agent-agnostic task to a reusable, version-pinned runtime image through a runtime profile;
+- `external`: run any Harbor agent import path that is already available to the host Harbor process, with model configuration either supplied by the suite or owned by the agent.
+
+This allows a new agent to be integrated once and reused across the task suite without maintaining agent-specific copies of tasks. See [`docs/reproducibility/adding_harnesses.md`](docs/reproducibility/adding_harnesses.md) and [`runtime/BINDING.md`](runtime/BINDING.md).
+
+## Release and citation
+
+The Git tag identifies the canonical source tree for a release, and the corresponding Zenodo archive provides persistent citation. Recorded executions use Harbor 0.22.0 with Docker-backed task environments. The public harness configurations use OpenCode 1.18.30 and Mini-SWE-Agent 2.4.6; recorded model inference uses GLM-5.3-Flash served through Fireworks AI.
+
+See [`docs/provenance/software_attribution.md`](docs/provenance/software_attribution.md) for software references and [`CITATION.cff`](CITATION.cff) for citation metadata. Agent Harness Smoke v0.2.1 is archived on Zenodo under DOI [`10.5281/zenodo.22897087`](https://doi.org/10.5281/zenodo.22897087).
+
+## Quick start
 
 From a Harbor-enabled PowerShell environment:
 
@@ -56,4 +64,4 @@ From a Harbor-enabled PowerShell environment:
 .\runtime\scripts\run-focused-suite.ps1 -TrialsRoot "$PWD\trials"
 ```
 
-Scenario 1 uses `runtime/scripts/run-scenario1.ps1`. Raw Harbor trials are written outside the release evidence tree; normalized results can be collected into `results/`.
+Scenario 1 uses `runtime/scripts/run-scenario1.ps1`. Raw Harbor trials are stored separately from the curated evidence included in the release.

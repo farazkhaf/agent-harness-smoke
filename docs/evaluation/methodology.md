@@ -8,7 +8,7 @@ Four evidence layers are kept separate:
 
 1. Verifier — contract correctness. Checks the behavior and preservation requirements stated by the task.
 2. Workspace observer — final-state description. Records changed paths and coarse diff statistics without deciding correctness unless the task explicitly constrains scope.
-3. Compact report — cross-harness comparison surface. Records task and harness identity, reward, model-call count when available, token/cache totals, cost, and timing.
+3. Compact report — normalized run summary. Records task and harness identity, reward, model-call count when available, token/cache totals, cost, and timing.
 4. Trajectory — interaction-route evidence. Used to inspect how a run proceeded and to diagnose unusual outcomes; it is not part of the reward.
 
 This separation prevents edit strategy, Git shape, or incidental extra files from becoming hidden correctness criteria.
@@ -21,11 +21,11 @@ A focused task is intended to create a distinct workspace interaction requiremen
 
 The Batchline suite therefore covers coordinated propagation, selective repeated editing, substantial deletion, large line-oriented inspection, and substantial move/module splitting.
 
-## Controlled comparison
+## Controlled execution
 
-The public harness cells use the same underlying model family and the same canonical task packages. Harness-native provider identifiers and tool vocabularies are retained. A harness may use shell commands, structured file tools, scripts, or mixed strategies; the verifier does not prescribe one mechanism.
+Recorded harness cells use the same underlying model family and canonical task packages when the study design calls for a controlled cross-harness condition. Harness-native provider identifiers and tool vocabularies are retained. A harness may use shell commands, structured file tools, scripts, or mixed strategies; the verifier does not prescribe one mechanism.
 
-Comparisons are grouped by logical task ID and task version. Runtime-specific checksums and temporary binding paths are not used as cross-harness task identities.
+Runs are grouped by logical task ID and task version. Runtime-specific checksums and temporary binding paths are not used as task identities.
 
 ## Resource telemetry
 
@@ -35,6 +35,6 @@ These fields describe a particular run route. They should not be interpreted as 
 
 ## Sampling and interpretation
 
-Focused checkpoints and scenario cells are retained as observed executions rather than population estimates. Scenario 1 currently uses two repetitions per harness. Those repetitions can document route recurrence, route variation, and concrete failure/recovery episodes, but they are not used to rank harness products or estimate stable success probabilities.
+Focused checkpoints and scenario cells are retained as observed executions rather than population estimates. Scenario 1 currently uses two repetitions per harness. Those repetitions can document route recurrence, route variation, and concrete failure/recovery episodes, but they are not treated as stable estimates of outcome probability.
 
-The reusable evaluator therefore reports correctness and telemetry without computing a composite harness score. Research-level interpretation is kept under `research/`.
+The evaluator reports correctness and descriptive telemetry without combining them into a composite score. Study interpretation is kept under `research/`.

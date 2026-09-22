@@ -1,0 +1,383 @@
+{
+  "schema_version": "0.2",
+  "suite": {
+    "id": "batchline-scenario1-v0.2.0",
+    "kind": "scenario",
+    "description": "Scenario 1: worker drain/resume lifecycle with Python and JSON Schema extraction",
+    "repeats": 2,
+    "verifier_revision": 3
+  },
+  "runs": [
+    {
+      "trial": "batchline-worker-draining-event__km4jMEv",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "custom-harness",
+      "harness_version": "0.2.0.dev0-harbor.2",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": true,
+      "reward": 1.0,
+      "verifier_rewards": {
+        "reward": 1.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "status": "pass",
+          "note": ""
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 165,
+      "workspace_lines_deleted": 354,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 524,
+      "workspace_text_lines_added_total": 689,
+      "workspace_text_lines_deleted_total": 354,
+      "inference_calls": 25,
+      "input_tokens": 1279891,
+      "cached_tokens": 1187840,
+      "uncached_input_tokens": 92051,
+      "output_tokens": 12697,
+      "reasoning_tokens": 20324,
+      "cost_usd": 0.06476551,
+      "total_seconds": 432.451492,
+      "agent_execution_seconds": 304.520252,
+      "attempt": 1,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 3
+    },
+    {
+      "trial": "batchline-worker-draining-event__cnfjxSh",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "custom-harness",
+      "harness_version": "0.2.0.dev0-harbor.2",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": true,
+      "reward": 1.0,
+      "verifier_rewards": {
+        "reward": 1.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 211,
+      "workspace_lines_deleted": 385,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 542,
+      "workspace_text_lines_added_total": 753,
+      "workspace_text_lines_deleted_total": 385,
+      "inference_calls": 32,
+      "input_tokens": 1611711,
+      "cached_tokens": 1511424,
+      "uncached_input_tokens": 100287,
+      "output_tokens": 16567,
+      "reasoning_tokens": 19495,
+      "cost_usd": 0.076905346,
+      "total_seconds": 409.245475,
+      "agent_execution_seconds": 340.054417,
+      "attempt": 2,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 3
+    },
+    {
+      "trial": "batchline-worker-draining-event__jZT9z9E",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "mini-swe-agent",
+      "harness_version": "2.4.6",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": false,
+      "reward": 0.0,
+      "verifier_rewards": {
+        "reward": 0.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "non-draining snapshot retaining a reason must be rejected",
+          "status": "fail"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 246,
+      "workspace_lines_deleted": 383,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 556,
+      "workspace_text_lines_added_total": 802,
+      "workspace_text_lines_deleted_total": 383,
+      "inference_calls": 47,
+      "input_tokens": 1181715,
+      "cached_tokens": 1077248,
+      "uncached_input_tokens": 104467,
+      "output_tokens": 60210,
+      "reasoning_tokens": 46452,
+      "cost_usd": 0.07809249,
+      "total_seconds": 671.185293,
+      "agent_execution_seconds": 600.03691,
+      "attempt": 1,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 3
+    },
+    {
+      "trial": "batchline-worker-draining-event__yx9PQ93",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "mini-swe-agent",
+      "harness_version": "2.4.6",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": true,
+      "reward": 1.0,
+      "verifier_rewards": {
+        "reward": 1.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 152,
+      "workspace_lines_deleted": 380,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 548,
+      "workspace_text_lines_added_total": 700,
+      "workspace_text_lines_deleted_total": 380,
+      "inference_calls": 43,
+      "input_tokens": 1389312,
+      "cached_tokens": 1296384,
+      "uncached_input_tokens": 92928,
+      "output_tokens": 44405,
+      "reasoning_tokens": 27136,
+      "cost_usd": 0.07503322,
+      "total_seconds": 491.054998,
+      "agent_execution_seconds": 426.569415,
+      "attempt": 2,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 3
+    },
+    {
+      "trial": "batchline-worker-draining-event__rn8Kagd",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "opencode",
+      "harness_version": "1.18.30",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": true,
+      "reward": 1.0,
+      "verifier_rewards": {
+        "reward": 1.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 159,
+      "workspace_lines_deleted": 381,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 518,
+      "workspace_text_lines_added_total": 677,
+      "workspace_text_lines_deleted_total": 381,
+      "inference_calls": 45,
+      "input_tokens": 1804749,
+      "cached_tokens": 1693696,
+      "uncached_input_tokens": 111053,
+      "output_tokens": 12906,
+      "reasoning_tokens": 11918,
+      "cost_usd": 0.07988083,
+      "total_seconds": 470.023622,
+      "agent_execution_seconds": 378.924441,
+      "attempt": 1,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 3
+    },
+    {
+      "trial": "batchline-worker-draining-event__n6t6eao",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "opencode",
+      "harness_version": "1.18.30",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": true,
+      "reward": 1.0,
+      "verifier_rewards": {
+        "reward": 1.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 118,
+      "workspace_lines_deleted": 365,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 521,
+      "workspace_text_lines_added_total": 639,
+      "workspace_text_lines_deleted_total": 365,
+      "inference_calls": 42,
+      "input_tokens": 1602556,
+      "cached_tokens": 1507328,
+      "uncached_input_tokens": 95228,
+      "output_tokens": 11928,
+      "reasoning_tokens": 11633,
+      "cost_usd": 0.07128454000000004,
+      "total_seconds": 374.843137,
+      "agent_execution_seconds": 307.218121,
+      "attempt": 2,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 3
+    }
+  ],
+  "notes": {
+    "sampling": "Two recorded executions are retained per harness. See research/METHODS.md for the study interpretation.",
+    "verifier": "Results use the current Scenario 1 verifier (r3). The original collection-time verifier and adjudication record are preserved under evidence/verifier-revisions/scenario1-v0.2.0/.",
+    "token_accounting": "output_tokens are non-reasoning completion tokens; reasoning_tokens are reported separately. Historical custom-harness splits were recovered from preserved native metrics; provider-reported cost is unchanged."
+  }
+}

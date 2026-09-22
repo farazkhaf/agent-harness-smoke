@@ -103,9 +103,3 @@ Cross-harness conclusions should be made only after the relevant repeated-run ce
 ## Reporting format
 
 A per-run report should contain the verifier outcome, final workspace scope, orientation/localization route, lifecycle coordination route, Python extraction route, schema extraction route, verification sequence, recovery episodes, context-stewardship observations, and descriptive telemetry. Every route claim should be traceable to an observable action, result, workspace artifact, or verifier record.
-
-## Verifier revision provenance
-
-Scenario 1 correctness should be reported with a verifier revision identifier separately from solver-visible task version `0.2.0`. Revision 1 is historical evidence; revision 2 is canonical. Because revision 2 changes only external acceptance logic, existing trajectories are not rerun. When a verifier revision changes an outcome, reports should preserve both the original recorded result and the revised canonical interpretation rather than replacing the history.
-
-Structural verifier checks must follow the solver-facing contract. In particular, schema ownership is about where concrete assertions live, not one preferred reference layout. A pure forwarding alias can satisfy external ownership when it contains no local schema assertions. This rule should be applied consistently to future structural checks: if a competent implementation can satisfy the literal software contract while failing a structural assertion, either the contract must state that structure explicitly before collection or the verifier should test the behavior/ownership property instead.

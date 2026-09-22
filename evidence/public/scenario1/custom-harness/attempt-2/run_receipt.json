@@ -13,14 +13,17 @@
   "input_tokens": 1611711,
   "cached_tokens": 1511424,
   "uncached_input_tokens": 100287,
-  "output_tokens": 36062,
+  "output_tokens": 16567,
+  "reasoning_tokens": 19495,
   "cost_usd": 0.076905346,
   "total_seconds": 409.245475,
   "agent_execution_seconds": 340.054417,
   "workspace_changed_files_total": 14,
   "workspace_text_lines_added_total": 753,
   "workspace_text_lines_deleted_total": 385,
-  "verifier_r1": {
+  "trajectory_publication": "private",
+  "verifier_at_collection": {
+    "revision": "r1",
     "reward": 1.0,
     "groups": {
       "G1_lifecycle": {
@@ -49,8 +52,8 @@
       }
     }
   },
-  "trajectory_publication": "withheld; route-level publication decision pending",
-  "verifier_r2": {
+  "current_verifier": {
+    "revision": "r3",
     "reward": 1.0,
     "groups": {
       "G1_lifecycle": {
@@ -78,6 +81,6 @@
         "status": "pass"
       }
     },
-    "method": "unchanged r1 pass under relaxation-only verifier r2"
+    "method": "same recorded workspace; no agent rerun"
   }
 }

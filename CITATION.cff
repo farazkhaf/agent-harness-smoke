@@ -5,16 +5,16 @@ type: software
 authors:
   - family-names: "Ul Khaf"
     given-names: "Faraz"
-version: "0.2.0"
+version: "0.2.1"
 date-released: "2026-09-22"
 license: MIT
-doi: "10.5281/zenodo.22895191"
+doi: "10.5281/zenodo.22897087"
 repository-code: "https://github.com/farazkhaf/agent-harness-smoke"
-url: "https://doi.org/10.5281/zenodo.22895191"
+url: "https://doi.org/10.5281/zenodo.22897087"
 abstract: >-
   A Harbor-native diagnostic and evaluation suite for studying how coding-agent
   harnesses mediate software-engineering execution under controlled task and
-  model conditions. Version 0.2.0 contains six focused Batchline tasks plus a
+  model conditions. Version 0.2.1 contains six focused Batchline tasks plus a
   composed maintenance scenario, reusable Harbor runtime and harness integration
   utilities, deterministic verifiers and workspace observers, normalized
   execution telemetry, retained run evidence, verifier provenance, and an active

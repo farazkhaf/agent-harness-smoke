@@ -1,24 +1,28 @@
-# Reference results
+# Recorded results
 
-This file is the neutral product-facing result index. Interpretive route findings are kept under `research/`.
+This index summarizes the reference executions included with the release. Machine-readable tables are under `results/`, execution artifacts are under `evidence/`, and interpretation is kept separately under `research/`.
 
-## Focused checkpoint
+## Focused suite
 
-The v0.2.0 focused checkpoint contains 18 recorded runs: six tasks across OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and `custom-harness` snapshot-1. All 18 received `reward = 1.0` under their recorded task versions. Machine-readable forms are under `results/batchline-focused/accepted-18/`; the earlier 15-row checkpoint remains under `accepted-15/`.
+The focused checkpoint carried by v0.2.1 contains 18 recorded runs: six tasks across OpenCode 1.18.30, Mini-SWE-Agent 2.4.6, and `custom-harness` snapshot-1. All 18 received `reward = 1.0` under their recorded task versions.
+
+Results: `results/batchline-focused/accepted-18/`.
 
 ## Scenario 1
 
-Scenario 1 contains two recorded executions per harness under the same solver-visible task version `0.2.0`. The current verifier revision is r3. No recorded outcome differs between r2 and r3; r2 remains the revision that changed Custom Attempt 1 from the original r1 G5-only failure to pass after the contract audit.
+Scenario 1 contains two recorded executions per harness under task version `0.2.0`. The table below uses the current verifier, revision `r3`.
 
-| Harness | Attempt | Current outcome | Historical note |
+| Harness | Attempt | Outcome | Note |
 |---|---:|---|---|
-| OpenCode 1.18.30 | 1 | pass | passed r1 |
-| OpenCode 1.18.30 | 2 | pass | passed r1 |
-| Mini-SWE-Agent 2.4.6 | 1 | G1 fail | valid 600 s agent timeout; G1 defect unchanged by verifier revisions |
-| Mini-SWE-Agent 2.4.6 | 2 | pass | passed r1 |
-| custom-harness | 1 | pass | r1: G5 fail; r2+: pass after verifier-only contract correction |
-| custom-harness | 2 | pass | passed r1 |
+| OpenCode 1.18.30 | 1 | pass | — |
+| OpenCode 1.18.30 | 2 | pass | — |
+| Mini-SWE-Agent 2.4.6 | 1 | G1 fail | valid 600 s agent timeout; the final workspace retained a lifecycle invariant defect |
+| Mini-SWE-Agent 2.4.6 | 2 | pass | — |
+| custom-harness | 1 | pass | the original collection-time verifier rejected its forwarding-alias schema layout; the current verifier accepts the unchanged workspace because concrete worker definitions reside in the dedicated worker schema |
+| custom-harness | 2 | pass | — |
 
-Canonical normalized Scenario 1 tables remain under `results/batchline-scenarios/batchline-scenario1-v0.2.0-comparison/`. Verifier r1/r2 history and the r3 evaluator are under `evidence/verifier-revisions/scenario1-v0.2.0/`.
+Current normalized results: `results/batchline-scenarios/scenario1/`.
 
-These rows are reference outcomes, not product rankings or stable success-rate estimates. Calls, tokens, timing, workspace statistics, and verifier groups are retained as descriptive run telemetry.
+The original collection-time verifier and the direct original-to-current verifier diff are preserved under `evidence/verifier-revisions/scenario1-v0.2.0/`. OpenCode and Mini-SWE Scenario 1 trajectories are published under `evidence/public/scenario1/`; custom-harness run receipts and verifier records are included there, while its raw trajectory remains private.
+
+Two attempts per harness are retained as repeated observations. Their sampling interpretation and route analysis are documented under `research/`.
