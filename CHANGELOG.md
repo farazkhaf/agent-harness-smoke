@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.0 — 2026-09-21
+## v0.2.0 — 2026-09-22
 
 Focused-suite expansion.
 

@@ -31,7 +31,7 @@ The focused `accepted-18` checkpoint contains six tasks across OpenCode 1.18.30,
 
 Scenario 1 is a separate composed maintenance task at solver-visible task version `0.2.0`. It has two recorded runs each for OpenCode, Mini-SWE-Agent, and the custom harness. Verifier revisions are versioned independently from the solver-visible task. Revision 1 is the collection-time evaluator; revision 2 corrected an overconstrained forwarding-alias interpretation; revision 3 adds contract-visible edge guards without changing any recorded Scenario 1 outcome.
 
-See [`RESULTS.md`](RESULTS.md) for neutral reference outcomes, [`docs/evaluation/scenario1_verifier_revision.md`](docs/evaluation/scenario1_verifier_revision.md) for verifier history, and [`research/scenario-1/FINDINGS.md`](research/scenario-1/FINDINGS.md) for interpretation.
+See [`RESULTS.md`](RESULTS.md) for reference outcomes, [`docs/evaluation/scenario1_verifier_revision.md`](docs/evaluation/scenario1_verifier_revision.md) for verifier history, and [`research/scenario-1/FINDINGS.md`](research/scenario-1/FINDINGS.md) for interpretation.
 
 ## Documentation
 
@@ -41,6 +41,10 @@ See [`RESULTS.md`](RESULTS.md) for neutral reference outcomes, [`docs/evaluation
 - [`docs/reproducibility/`](docs/reproducibility/) — build, run, evidence, and privacy guidance.
 - [`evidence/README.md`](evidence/README.md) — retained evidence layout.
 - [`research/STUDY_OBJECTIVE.md`](research/STUDY_OBJECTIVE.md) — formal research objective.
+
+## Citation
+
+Agent Harness Smoke v0.2.0 is archived on Zenodo under DOI `10.5281/zenodo.22895191`. Citation metadata is provided in [`CITATION.cff`](CITATION.cff).
 
 ## Quick run
 
