@@ -44,7 +44,7 @@ See [`RESULTS.md`](RESULTS.md) for reference outcomes, [`docs/evaluation/scenari
 
 ## Citation
 
-A Zenodo DOI has been reserved for Agent Harness Smoke v0.2.0: `10.5281/zenodo.22895191`. Citation metadata is provided in [`CITATION.cff`](CITATION.cff).
+Agent Harness Smoke v0.2.0 is archived on Zenodo under DOI [`10.5281/zenodo.22895191`](https://doi.org/10.5281/zenodo.22895191). Citation metadata is provided in [`CITATION.cff`](CITATION.cff).
 
 ## Quick run
 
