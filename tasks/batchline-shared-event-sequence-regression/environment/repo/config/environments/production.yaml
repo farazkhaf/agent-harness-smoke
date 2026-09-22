@@ -1,0 +1,26 @@
+name: production
+default_timeout_seconds: 60
+required_settings:
+  thumbnailer:
+    max_retries: 4
+    concurrency: 4
+  notifier:
+    max_retries: 5
+  exporter:
+    timeout_seconds: 300
+  cleanup:
+    enabled: true
+  importer:
+    max_retries: 3
+  indexer:
+    concurrency: 6
+  webhook:
+    timeout_seconds: 30
+    max_retries: 6
+  auditor:
+    enabled: true
+  archiver:
+    timeout_seconds: 480
+  reconciler:
+    max_retries: 4
+overrides: {}

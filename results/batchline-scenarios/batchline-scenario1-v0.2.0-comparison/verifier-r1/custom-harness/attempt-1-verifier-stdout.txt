@@ -1,0 +1,29 @@
+{
+  "groups": {
+    "G1_lifecycle": {
+      "note": "",
+      "status": "pass"
+    },
+    "G2_capacity_health": {
+      "note": "",
+      "status": "pass"
+    },
+    "G3_public_surfaces": {
+      "note": "",
+      "status": "pass"
+    },
+    "G4_event_structure": {
+      "note": "",
+      "status": "pass"
+    },
+    "G5_event_contract": {
+      "note": "aggregate schema still owns concrete worker event definitions",
+      "status": "fail"
+    },
+    "G6_integration_preservation": {
+      "note": "",
+      "status": "pass"
+    }
+  },
+  "reward": 0
+}

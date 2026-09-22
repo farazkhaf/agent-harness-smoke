@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aggregate normalized trial reports for one focused-task suite."""
+"""Aggregate normalized trial reports for one harness-evaluation suite."""
 from __future__ import annotations
 
 import argparse
@@ -90,6 +90,19 @@ def aggregate(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(out, key=lambda r: (str(r["task"]), str(r["harness"])))
 
 
+def scenario_group_summary(value: Any) -> str:
+    if not isinstance(value, dict):
+        return "—"
+    parts = []
+    for name, detail in sorted(value.items()):
+        if isinstance(detail, dict):
+            status = detail.get("status", "?")
+        else:
+            status = detail
+        parts.append(f"{name}={status}")
+    return ", ".join(parts) if parts else "—"
+
+
 def reward_groups(value: Any) -> str:
     if not isinstance(value, dict):
         return "—"
@@ -115,21 +128,21 @@ def markdown(suite: dict[str, Any], rows: list[dict[str, Any]], summary: list[di
         "",
         suite.get("description", ""),
         "",
-        "> Compact focused-task report only. Raw Harbor/native trajectories remain separate drill-down artifacts and are not interpreted here. Calls/tokens/cost/time are descriptive route/resource telemetry; smaller wall time is not treated as inherently better.",
+        "> Compact suite report only. Raw Harbor/native trajectories remain separate drill-down artifacts and are not interpreted here. Calls/tokens/cost/time are descriptive route/resource telemetry; smaller wall time is not treated as inherently better.",
         "",
         "## Runs",
         "",
-        "| Task | Harness | Reward | Verifier groups | Calls | Input | Cached | Output | Cost USD | Total s |",
-        "|---|---|---:|---|---:|---:|---:|---:|---:|---:|",
+        "| Task | Harness | Attempt | Reward | Verifier groups | Calls | Input | Cached | Output | Cost USD | Total s |",
+        "|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|",
     ]
     for r in rows:
         lines.append(
-            f"| `{r['task']}` | `{r['harness']}` | {md_value(r['reward'])} | {reward_groups(r.get('verifier_rewards'))} | {md_value(r['inference_calls'])} | "
+            f"| `{r['task']}` | `{r['harness']}` | {md_value(r.get('attempt'))} | {md_value(r['reward'])} | {scenario_group_summary(r.get('verifier_groups')) if r.get('verifier_groups') else reward_groups(r.get('verifier_rewards'))} | {md_value(r['inference_calls'])} | "
             f"{md_value(r['input_tokens'])} | {md_value(r['cached_tokens'])} | {md_value(r['output_tokens'])} | "
             f"{md_value(r['cost_usd'])} | {md_value(r['total_seconds'])} |"
         )
     if not rows:
-        lines.append("| — | — | — | — | — | — | — | — | — | — |")
+        lines.append("| — | — | — | — | — | — | — | — | — | — | — |")
 
     if any(s["runs"] > 1 for s in summary):
         lines += [
@@ -151,7 +164,11 @@ def markdown(suite: dict[str, Any], rows: list[dict[str, Any]], summary: list[di
 def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
     fieldnames = [
         "task", "task_version", "family", "primitive", "attempt", "harness", "harness_version", "provider", "model",
-        "trial", "passed", "reward", "verifier_rewards", "inference_calls", "input_tokens", "cached_tokens", "uncached_input_tokens",
+        "trial", "passed", "reward", "verifier_rewards", "verifier_groups",
+        "workspace_changed_files", "workspace_lines_added", "workspace_lines_deleted", "workspace_untracked_files",
+        "workspace_changed_files_total", "workspace_untracked_text_lines_added",
+        "workspace_text_lines_added_total", "workspace_text_lines_deleted_total",
+        "inference_calls", "input_tokens", "cached_tokens", "uncached_input_tokens",
         "output_tokens", "cost_usd", "total_seconds", "agent_execution_seconds",
     ]
     with path.open("w", newline="", encoding="utf-8") as f:
@@ -161,12 +178,13 @@ def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
         for row in rows:
             item = dict(row)
             item["verifier_rewards"] = json.dumps(item.get("verifier_rewards") or {}, ensure_ascii=False, sort_keys=True)
+            item["verifier_groups"] = json.dumps(item.get("verifier_groups") or {}, ensure_ascii=False, sort_keys=True)
             csv_rows.append(item)
         writer.writerows(csv_rows)
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Aggregate normalized reports for a focused-task suite")
+    ap = argparse.ArgumentParser(description="Aggregate normalized reports for a harness-evaluation suite")
     ap.add_argument("--suite", type=Path, required=True)
     ap.add_argument("--reports-root", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
@@ -176,7 +194,12 @@ def main() -> int:
     task_ids = {t["id"] for t in suite["tasks"]}
     reports = [r for r in load_reports(args.reports_root.resolve()) if r.get("task", {}).get("id") in task_ids]
     rows = [enrich(r, suite) for r in reports]
-    rows.sort(key=lambda r: (str(r["task"]), str(r["harness"]), str(r["trial"])))
+    rows.sort(key=lambda r: (
+        str(r["task"]),
+        str(r["harness"]),
+        r["attempt"] if isinstance(r.get("attempt"), int) else 10**9,
+        str(r["trial"]),
+    ))
     summary = aggregate(rows)
 
     out = args.out.resolve()

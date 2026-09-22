@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1",
+  "task_id": "batchline-shared-event-sequence-regression",
+  "task_version": "0.1.0",
+  "task_type": "focused-task",
+  "capability_family": "same-process-verification-regression-test",
+  "anchor_id": "batchline",
+  "anchor_version": "0.3-event-sequence-seed",
+  "workspace_observer": "git",
+  "expected_edit_globs": [
+    "src/batchline/events/encoder.py",
+    "tests/events/test_event_sequence.py"
+  ],
+  "forbidden_edit_globs": []
+}

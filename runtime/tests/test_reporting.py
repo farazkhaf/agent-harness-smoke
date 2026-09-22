@@ -10,9 +10,9 @@ RUNTIME = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RUNTIME / "report"))
 sys.path.insert(0, str(RUNTIME / "suite"))
 
-from report_trial import normalize_trial, write_report  # noqa: E402
+from report_trial import flat_row, normalize_trial, write_report  # noqa: E402
 from suite_config import execution_plan, load_suite  # noqa: E402
-from collect_suite import aggregate, enrich, load_reports  # noqa: E402
+from collect_suite import aggregate, enrich, load_reports, markdown  # noqa: E402
 
 
 class ReportingTests(unittest.TestCase):
@@ -74,13 +74,13 @@ class ReportingTests(unittest.TestCase):
             self.assertNotIn("first_call_prompt_tokens", report["telemetry"])
             self.assertEqual(report["outcome"]["rewards"]["behavior"], 1.0)
 
-    def test_focused_suite_is_five_tasks_by_two_profiles(self) -> None:
+    def test_focused_suite_is_six_tasks_by_two_profiles(self) -> None:
         suite = load_suite(self.suite_path)
         self.assertEqual(suite["schema_version"], "0.2")
-        self.assertEqual(len(suite["tasks"]), 5)
+        self.assertEqual(len(suite["tasks"]), 6)
         self.assertEqual(len(suite["profiles"]), 2)
         plan = execution_plan(suite)
-        self.assertEqual(len(plan), 10)
+        self.assertEqual(len(plan), 12)
         self.assertEqual({entry["execution"] for entry in plan}, {"preinstalled"})
         ids = {t["id"] for t in suite["tasks"]}
         self.assertNotIn("agent-harness-smoke/batchline-rate-limit-retry-after", ids)
@@ -139,6 +139,77 @@ execution = "external"
             with self.assertRaisesRegex(ValueError, "requires agent import path"):
                 load_suite(suite_path)
 
+
+    def test_scenario_suite_and_diagnostic_artifacts_are_supported(self) -> None:
+        scenario_suite = self.repo / "suites" / "batchline-scenario1-smoke" / "suite.toml"
+        suite = load_suite(scenario_suite)
+        self.assertEqual(suite["kind"], "scenario")
+        plan = execution_plan(suite)
+        self.assertEqual(len(plan), 1)
+        self.assertEqual({entry["attempt"] for entry in plan}, {1})
+        self.assertEqual({entry["profile_id"] for entry in plan}, {"opencode-1.18.30"})
+
+        with tempfile.TemporaryDirectory() as tmp:
+            trial = self._write_trial(
+                Path(tmp),
+                "scenario-trial",
+                "agent-harness-smoke/batchline-worker-draining-event-extraction",
+                calls=5,
+            )
+            groups = {
+                "reward": 1,
+                "groups": {
+                    "G1_lifecycle": {"status": "pass", "note": ""},
+                    "G4_event_structure": {"status": "pass", "note": ""},
+                },
+            }
+            observation = {
+                "schema_version": "0.2",
+                "changed_files": 8,
+                "lines_added": 134,
+                "lines_deleted": 121,
+                "untracked_files": 3,
+                "workspace_changed_files_total": 11,
+                "untracked_text_lines_added": 211,
+                "workspace_text_lines_added_total": 345,
+                "workspace_text_lines_deleted_total": 121,
+            }
+            (trial / "scenario_verifier_groups.json").write_text(json.dumps(groups), encoding="utf-8")
+            (trial / "scenario_workspace_observation.json").write_text(json.dumps(observation), encoding="utf-8")
+            report = normalize_trial(trial)
+            self.assertEqual(report["diagnostics"]["verifier_groups"]["G1_lifecycle"]["status"], "pass")
+            self.assertEqual(report["diagnostics"]["workspace_observation"]["changed_files"], 8)
+            out = Path(tmp) / "normalized"
+            write_report(report, out)
+            written = json.loads((out / "report.json").read_text(encoding="utf-8"))
+            self.assertEqual(written["diagnostics"]["workspace_observation"]["untracked_files"], 3)
+            row = flat_row(written)
+            self.assertEqual(row["workspace_changed_files_total"], 11)
+            self.assertEqual(row["workspace_untracked_text_lines_added"], 211)
+            self.assertEqual(row["workspace_text_lines_added_total"], 345)
+
+
+    def test_generic_runner_uses_scenario_result_namespace(self) -> None:
+        script = (self.repo / "runtime" / "scripts" / "run-suite.ps1").read_text(encoding="utf-8")
+        self.assertIn('$suiteMeta.kind -eq "scenario"', script)
+        self.assertIn('results\\batchline-scenarios\\{0}\\{1}', script)
+        wrapper = (self.repo / "runtime" / "scripts" / "run-scenario1.ps1").read_text(encoding="utf-8")
+        self.assertIn('suites\\batchline-scenario1-comparison\\suite.toml', wrapper)
+
+    def test_scenario_comparison_suite_is_two_runs_per_public_profile(self) -> None:
+        scenario_suite = self.repo / "suites" / "batchline-scenario1-comparison" / "suite.toml"
+        suite = load_suite(scenario_suite)
+        self.assertEqual(suite["kind"], "scenario")
+        self.assertEqual(suite["repeats"], 2)
+        plan = execution_plan(suite)
+        self.assertEqual(len(plan), 4)
+        self.assertEqual({entry["attempt"] for entry in plan}, {1, 2})
+        self.assertEqual(
+            {entry["profile_id"] for entry in plan},
+            {"opencode-1.18.30", "mini-swe-2.4.6"},
+        )
+        self.assertEqual({entry["task_version"] for entry in plan}, {"0.2.0"})
+
     def test_collector_reads_normalized_reports_and_aggregates_repeats(self) -> None:
         suite = load_suite(self.suite_path)
         with tempfile.TemporaryDirectory() as tmp:
@@ -155,6 +226,10 @@ execution = "external"
             self.assertEqual(len(summary), 1)
             self.assertEqual(summary[0]["runs"], 2)
             self.assertEqual(summary[0]["pass_rate"], 1.0)
+            rendered = markdown(suite, sorted(rows, key=lambda r: r["attempt"]), summary)
+            self.assertIn("| Task | Harness | Attempt |", rendered)
+            self.assertIn("| 1 | 1.00 |", rendered)
+            self.assertIn("| 2 | 1.00 |", rendered)
 
 
 if __name__ == "__main__":

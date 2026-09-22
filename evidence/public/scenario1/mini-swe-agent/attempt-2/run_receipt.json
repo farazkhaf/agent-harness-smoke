@@ -1,0 +1,60 @@
+{
+  "schema_version": "0.1",
+  "trial": "batchline-worker-draining-event__yx9PQ93",
+  "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+  "task_version": "0.2.0",
+  "harness": "mini-swe-agent",
+  "harness_version": "2.4.6",
+  "provider": "fireworks_ai",
+  "model": "accounts/fireworks/models/glm-5p3-flash",
+  "attempt": 2,
+  "passed": true,
+  "reward": 1.0,
+  "verifier_groups": {
+    "G1_lifecycle": {
+      "note": "",
+      "status": "pass"
+    },
+    "G2_capacity_health": {
+      "note": "",
+      "status": "pass"
+    },
+    "G3_public_surfaces": {
+      "note": "",
+      "status": "pass"
+    },
+    "G4_event_structure": {
+      "note": "",
+      "status": "pass"
+    },
+    "G5_event_contract": {
+      "note": "",
+      "status": "pass"
+    },
+    "G6_integration_preservation": {
+      "note": "",
+      "status": "pass"
+    }
+  },
+  "workspace": {
+    "changed_files_tracked": 10,
+    "changed_files_total": 14,
+    "untracked_files": 4,
+    "tracked_lines_added": 152,
+    "tracked_lines_deleted": 380,
+    "untracked_text_lines_added": 548,
+    "text_lines_added_total": 700,
+    "text_lines_deleted_total": 380
+  },
+  "telemetry": {
+    "inference_calls": 43,
+    "input_tokens": 1389312,
+    "cached_tokens": 1296384,
+    "uncached_input_tokens": 92928,
+    "output_tokens": 44405,
+    "cost_usd": 0.07503322,
+    "total_seconds": 491.054998,
+    "agent_execution_seconds": 426.569415
+  },
+  "exception": null
+}

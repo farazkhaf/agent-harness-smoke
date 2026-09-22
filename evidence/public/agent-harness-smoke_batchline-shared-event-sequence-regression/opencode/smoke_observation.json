@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1",
+  "observer": "git",
+  "baseline_ref": "3de8a3a183a59f558ad43bdb233b2a4eaa6f4a80",
+  "changed_files": 1,
+  "changed_paths": [
+    "src/batchline/events/encoder.py"
+  ],
+  "lines_added": 2,
+  "lines_deleted": 3,
+  "untracked_files": 1,
+  "untracked_paths": [
+    "tests/events/test_event_sequence.py"
+  ],
+  "unexpected_files_changed": 0,
+  "unexpected_paths": [],
+  "forbidden_files_changed": 0,
+  "forbidden_paths": []
+}

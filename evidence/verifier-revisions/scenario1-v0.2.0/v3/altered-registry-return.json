@@ -1,0 +1,29 @@
+{
+  "groups": {
+    "G1_lifecycle": {
+      "note": "registry.drain() returned snapshot changed preserved field capacity",
+      "status": "fail"
+    },
+    "G2_capacity_health": {
+      "note": "draining must preserve physical capacity and active jobs",
+      "status": "fail"
+    },
+    "G3_public_surfaces": {
+      "note": "",
+      "status": "pass"
+    },
+    "G4_event_structure": {
+      "note": "",
+      "status": "pass"
+    },
+    "G5_event_contract": {
+      "note": "",
+      "status": "pass"
+    },
+    "G6_integration_preservation": {
+      "note": "",
+      "status": "pass"
+    }
+  },
+  "reward": 0
+}

@@ -1,0 +1,25 @@
+schema_version = "1.4"
+
+[task]
+name = "agent-harness-smoke/batchline-worker-draining-event-extraction"
+version = "0.2.0"
+description = "Add first-class worker drain/resume lifecycle behavior and extract worker event construction and worker schemas into dedicated ownership surfaces while preserving compatibility"
+authors = [{ name = "Faraz Ul Khaf" }]
+keywords = ["coding-agent", "harness", "scenario", "batchline", "worker-lifecycle", "module-extraction", "schema-extraction", "multi-surface", "compatibility", "behavioral-verification"]
+
+[metadata]
+category = "programming"
+purpose = "scenario"
+anchor_id = "batchline"
+anchor_version = "0.3-scenario1-seed"
+network_required_by_task = false
+
+[agent]
+timeout_sec = 600
+
+[verifier]
+timeout_sec = 180
+
+[environment]
+cpus = 2
+memory_mb = 2048

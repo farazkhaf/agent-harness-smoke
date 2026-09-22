@@ -1,0 +1,14 @@
+{
+  "event_id": "evt_worker_000003",
+  "event_type": "worker.resumed",
+  "occurred_at": "2026-01-01T12:05:00Z",
+  "source": "batchline.workers",
+  "schema_version": 1,
+  "payload": {
+    "worker": "thumb-01",
+    "service": "thumbnailer",
+    "queue": "media",
+    "active_jobs": 1,
+    "capacity": 4
+  }
+}

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "batchline"
+version = "0.3.0"
+description = "Local-first background job processing primitives used by the Harbor smoke-suite anchor repository."
+requires-python = ">=3.12"
+dependencies = [
+  "PyYAML>=6.0,<7",
+  "jsonschema>=4.20,<5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

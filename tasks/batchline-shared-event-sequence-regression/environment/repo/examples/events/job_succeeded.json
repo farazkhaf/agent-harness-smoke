@@ -1,0 +1,16 @@
+{
+  "event_id": "evt_job_1002",
+  "event_type": "job.succeeded",
+  "occurred_at": "2026-01-01T12:00:00Z",
+  "source": "batchline.jobs",
+  "schema_version": 1,
+  "payload": {
+    "job_id": "job_1002",
+    "kind": "notify",
+    "queue": "notifications",
+    "status": "succeeded",
+    "attempt": 1,
+    "max_attempts": 5,
+    "result": {"message_id": "msg_900"}
+  }
+}

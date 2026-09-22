@@ -9,6 +9,7 @@ from typing import Any
 
 SUPPORTED_SCHEMA_VERSIONS = {"0.1", "0.2"}
 SUPPORTED_EXECUTION_MODES = {"preinstalled", "external"}
+SUPPORTED_SUITE_KINDS = {"focused-task", "scenario"}
 
 
 def _validate_profile(profile: dict[str, Any]) -> None:
@@ -38,8 +39,8 @@ def load_suite(path: Path) -> dict[str, Any]:
     schema_version = data.get("schema_version")
     if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
         raise ValueError(f"Unsupported suite schema: {schema_version!r}")
-    if data.get("kind") != "focused-task":
-        raise ValueError("This runner currently expects a focused-task suite")
+    if data.get("kind") not in SUPPORTED_SUITE_KINDS:
+        raise ValueError(f"Unsupported suite kind: {data.get('kind')!r}")
     tasks = data.get("tasks") or []
     profiles = data.get("profiles") or []
     if not tasks or not profiles:

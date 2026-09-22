@@ -1,0 +1,7 @@
+harness,harness_version,attempt,reward,passed,inference_calls,uncached_input_tokens,output_tokens,agent_execution_seconds,workspace_changed_files_total,workspace_text_lines_added_total,workspace_text_lines_deleted_total
+custom-harness,0.2.0.dev0-harbor.2,1,1.0,True,25,92051,33021,304.520252,14,689,354
+custom-harness,0.2.0.dev0-harbor.2,2,1.0,True,32,100287,36062,340.054417,14,753,385
+mini-swe-agent,2.4.6,1,0.0,False,47,104467,60210,600.03691,14,802,383
+mini-swe-agent,2.4.6,2,1.0,True,43,92928,44405,426.569415,14,700,380
+opencode,1.18.30,1,1.0,True,45,111053,12906,378.924441,14,677,381
+opencode,1.18.30,2,1.0,True,42,95228,11928,307.218121,14,639,365

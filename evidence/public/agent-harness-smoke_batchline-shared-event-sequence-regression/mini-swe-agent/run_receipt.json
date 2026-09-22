@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.1",
+  "published_task_id": "agent-harness-smoke/batchline-shared-event-sequence-regression",
+  "executed_task_version": "0.1.0-rc1",
+  "published_task_version": "0.1.0",
+  "task_version_source": "release promotion mapping; instruction/verifier/observer logic/environment/solution unchanged",
+  "trial_name": "batchline-shared-event-sequence__qSy6Et9",
+  "task_checksum": "d010517812eaecb0c0708e99bd997af131c87f11a3ad8375d675d91346c3ee38",
+  "harness": "mini-swe-agent",
+  "harness_version": "2.4.6",
+  "provider": "fireworks_ai",
+  "model": "accounts/fireworks/models/glm-5p3-flash",
+  "reward": 1.0,
+  "input_tokens": 121555,
+  "cached_tokens": 96256,
+  "output_tokens": 4139,
+  "cost_usd": 0.00875203,
+  "started_at": "2026-09-21T11:41:49.509106Z",
+  "finished_at": "2026-09-21T11:45:50.695247Z",
+  "source_hashes": {
+    "internal_harbor_result_sha256": "582fbbc01167bbae4f4181fec547aa1a99d690d31c8e027051c6a5bee0ea9e89",
+    "internal_raw_trajectory_sha256": "776a600ac0360b37ef5d3dba33331566202eb1a401f8816637d933e330d8a7ee",
+    "published_sanitized_trajectory_sha256": "776a600ac0360b37ef5d3dba33331566202eb1a401f8816637d933e330d8a7ee"
+  },
+  "redactions": [],
+  "notes": [
+    "The public trajectory contains no host-local trial/task paths requiring redaction.",
+    "Task version promotion changed metadata/documentation only; execution contract and verifier are identical."
+  ]
+}

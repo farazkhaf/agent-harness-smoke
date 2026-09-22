@@ -1,22 +1,20 @@
 # Validation
 
-The release was validated at three levels.
+## Focused suite
 
-## Task controls
+Each focused task has untouched-state and author-solution controls plus task-specific verifier sensitivity checks. Runtime/reporting regression tests pass, task/suite/profile TOML files parse, and the current focused `accepted-18` matrix contains 18 passing recorded runs.
 
-Each task includes a failing untouched-state control and a passing author solution. Task-specific `AUTHOR_VALIDATION.md` files record additional negative controls, verifier sensitivity checks, and repository validation.
+## Scenario 1
 
-## Runtime and reporting controls
+Scenario 1 keeps solver-visible task version `0.2.0`; workspace observation remains descriptive and does not contribute to reward. Verifier revisions are preserved separately.
 
-- Mini-SWE-Agent 2.4.6 and OpenCode 1.18.30 were exercised through version-pinned reusable runtime images and thin Harbor wrappers.
-- The generic task binder preserves task content apart from runtime binding metadata and base-image substitution.
-- Reporting and suite regression tests pass.
-- Task, suite, and profile TOML files parse successfully.
+The r2 contract correction was validated by reconstructing Custom Attempt 1 from its retained trajectory, reproducing its original r1 G5-only failure, then passing the identical workspace under r2. Mini-SWE Attempt 1 retains its independent G1 lifecycle failure.
 
-## Formal focused matrix
+Verifier r3 adds two regression guards consistent with the written contract:
 
-The canonical matrix contains 15 Harbor runs: five tasks across OpenCode, Mini-SWE, and `custom-harness`. All 15 rows pass with `reward = 1.0`.
+- a concrete worker event definition retained in aggregate `$defs` fails even if it is renamed;
+- registry drain/resume return and stored snapshots must preserve the identity/service/queue/timestamp/active-job/capacity fields named by the instruction.
 
-R2 and R3 use task version 0.1.1 after verifier corrections. B1, R1, and R4 use version 0.1.0.
+A direct external worker `$ref` with a harmless `type: object` sibling passes r3. The author solution passes G1-G6 under r3. Targeted renamed-definition and altered-registry-return mutations fail as intended. These r3 checks do not change any recorded Scenario 1 result.
 
-The release includes trajectory evidence for the ten OpenCode and Mini-SWE rows and normalized result fields for all 15 rows.
+Runtime/reporting regression tests and package consistency checks are run again when the release artifacts are assembled.

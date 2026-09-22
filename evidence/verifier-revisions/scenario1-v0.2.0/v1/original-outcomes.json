@@ -1,0 +1,192 @@
+{
+  "task_version": "0.2.0",
+  "verifier_revision": 1,
+  "runs": [
+    {
+      "harness": "opencode",
+      "attempt": 1,
+      "reward": 1.0,
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "harness": "opencode",
+      "attempt": 2,
+      "reward": 1.0,
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "harness": "mini-swe-agent",
+      "attempt": 1,
+      "reward": 0.0,
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "non-draining snapshot retaining a reason must be rejected",
+          "status": "fail"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "harness": "mini-swe-agent",
+      "attempt": 2,
+      "reward": 1.0,
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "harness": "custom-harness",
+      "attempt": 1,
+      "reward": 0.0,
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "aggregate schema still owns concrete worker event definitions",
+          "status": "fail"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "harness": "custom-harness",
+      "attempt": 2,
+      "reward": 1.0,
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      }
+    }
+  ]
+}

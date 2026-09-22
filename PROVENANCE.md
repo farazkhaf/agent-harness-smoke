@@ -2,40 +2,28 @@
 
 ## Project identity
 
-The project title is Agent Harness Smoke and the Harbor task namespace is `agent-harness-smoke`.
+The project title is Agent Harness Smoke and the Harbor task namespace is `agent-harness-smoke`. Version 0.2.0 publishes six focused task identities plus Scenario 1 `agent-harness-smoke/batchline-worker-draining-event-extraction`.
 
-Version 0.1.0 publishes these task identities:
+The focused `accepted-18` matrix contains one canonical run for each of six task/harness cells across OpenCode, Mini-SWE, and the custom harness. The original 15-row checkpoint remains preserved.
 
-```text
-agent-harness-smoke/batchline-submitted-by
-agent-harness-smoke/batchline-selective-retry-policies
-agent-harness-smoke/batchline-remove-legacy-remote-provider
-agent-harness-smoke/batchline-quarantine-rate-limit-events
-agent-harness-smoke/batchline-extract-legacy-remote-provider
-```
+## Reasoning configuration
 
-The canonical runs were completed before the public namespace was finalized. Published run receipts map each archived run to its release task ID and retain hashes of the source execution artifacts. The task contracts and locked task versions are unchanged by the namespace change.
+The public OpenCode and Mini-SWE focused profiles omit `reasoning_effort`, so GLM-5.3-Flash uses its documented default `max`. Historical custom-harness focused runs explicitly used `high`; therefore focused custom/public differences are not treated as harness-only effects. Scenario 1 uses matched effective `max` reasoning.
 
-## Custom harness identity
+## Scenario 1 verifier identity
 
-The third harness is identified in release results as `custom-harness`, version `snapshot-1`. The result matrix contains its normalized correctness and resource fields; implementation and trajectory data are not distributed.
+Scenario 1 keeps solver-visible task version `0.2.0`. The instruction, seed repository, Dockerfile, task metadata, observer, test wrapper, and oracle solution used for the recorded executions are unchanged by later verifier maintenance. Verifier identity is recorded independently.
 
-## Canonical runs
+- **r1** — original collection-time verifier.
+- **r2** — contract correction accepting pure forwarding aliases and removing several non-contract implementation assumptions. Custom Attempt 1 changes from G5-only fail to pass when the identical workspace is re-evaluated.
+- **r3** — regression hardening only. It detects concrete worker schemas retained under renamed aggregate `$defs` entries and explicitly checks preservation fields on registry drain/resume returns/stored snapshots. Direct external worker `$ref` entries may still carry harmless siblings such as `type: object`. No recorded Scenario 1 outcome changes from r2.
 
-The accepted matrix contains one canonical run for each task/harness pair, for 15 rows in total.
+The revisions and diffs are retained under `evidence/verifier-revisions/scenario1-v0.2.0/`.
 
-## Task versions
+## Custom Attempt 1 adjudication
 
-| Family | Version |
-|---|---:|
-| B1 | 0.1.0 |
-| R1 | 0.1.0 |
-| R2 | 0.1.1 |
-| R3 | 0.1.1 |
-| R4 | 0.1.0 |
+Custom Attempt 1 originally failed G5 because r1 treated any same-named local worker `$defs` entry as retained concrete ownership and required one canonical direct-reference layout. The workspace instead used pure local forwarding aliases whose concrete worker definitions lived in `worker-events.schema.json`. Because the solver-visible contract required concrete ownership to move but did not prohibit forwarding aliases, r2 corrected the evaluator rather than changing the task instruction. The original r1 result remains historical evidence; r2+ is the canonical contract interpretation. No agent rerun was used to produce that change.
 
-R2 and R3 use their corrected verifier versions consistently across all three harness rows.
+## Authorship
 
-## Authorship and release continuity
-
-Agent Harness Smoke v0.1.0 is authored by Faraz Ul Khaf. `CITATION.cff`, `VERSION`, and `CHANGELOG.md` record the release identity and provide continuity for later task sets, repository fixtures, and scenario layers.
+Agent Harness Smoke v0.2.0 is authored by Faraz Ul Khaf. `CITATION.cff`, `VERSION`, and `CHANGELOG.md` provide release continuity.

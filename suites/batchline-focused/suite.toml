@@ -1,7 +1,7 @@
 schema_version = "0.2"
-id = "batchline-focused-v0.1"
+id = "batchline-focused-v0.2"
 kind = "focused-task"
-description = "Locked Batchline focused-task suite: B1 plus R1-R4"
+description = "Locked Batchline focused-task suite: B1, R1-R4, and V1"
 repeats = 1
 
 [[tasks]]
@@ -38,6 +38,13 @@ version = "0.1.0"
 path = "tasks/batchline-extract-legacy-remote-provider"
 family = "R4"
 primitive = "large contiguous move/module split"
+
+[[tasks]]
+id = "agent-harness-smoke/batchline-shared-event-sequence-regression"
+version = "0.1.0"
+path = "tasks/batchline-shared-event-sequence-regression"
+family = "V1"
+primitive = "same-process behavioral verification with constrained regression artifact"
 
 [[profiles]]
 id = "opencode-1.18.30"

@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1",
+  "task_id": "batchline-worker-draining-event-extraction",
+  "task_version": "0.2.0",
+  "task_type": "scenario",
+  "anchor_id": "batchline",
+  "anchor_version": "0.3-scenario1-seed",
+  "workspace_observer": "git",
+  "expected_edit_globs": [
+    "src/batchline/workers/**",
+    "src/batchline/api/serializers/workers.py",
+    "src/batchline/cli/**",
+    "src/batchline/events/**",
+    "schemas/events.schema.json",
+    "examples/events/**",
+    "schemas/worker-events.schema.json",
+    "tests/events/test_validation.py"
+  ],
+  "forbidden_edit_globs": [],
+  "observer_schema_version": "0.2"
+}

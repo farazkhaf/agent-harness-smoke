@@ -1,0 +1,29 @@
+{
+  "groups": {
+    "G1_lifecycle": {
+      "note": "non-draining snapshot retaining a reason must be rejected",
+      "status": "fail"
+    },
+    "G2_capacity_health": {
+      "note": "",
+      "status": "pass"
+    },
+    "G3_public_surfaces": {
+      "note": "",
+      "status": "pass"
+    },
+    "G4_event_structure": {
+      "note": "",
+      "status": "pass"
+    },
+    "G5_event_contract": {
+      "note": "",
+      "status": "pass"
+    },
+    "G6_integration_preservation": {
+      "note": "",
+      "status": "pass"
+    }
+  },
+  "reward": 0
+}

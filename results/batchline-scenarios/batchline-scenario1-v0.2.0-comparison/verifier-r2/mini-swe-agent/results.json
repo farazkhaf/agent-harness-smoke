@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.2",
+  "suite": {
+    "id": "batchline-scenario1-v0.2.0-comparison",
+    "kind": "scenario",
+    "description": "Scenario 1 comparison: worker drain/resume lifecycle with Python and JSON Schema extraction",
+    "repeats": 2,
+    "verifier_revision": 2
+  },
+  "runs": [
+    {
+      "trial": "batchline-worker-draining-event__jZT9z9E",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "mini-swe-agent",
+      "harness_version": "2.4.6",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": false,
+      "reward": 0.0,
+      "verifier_rewards": {
+        "reward": 0.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "non-draining snapshot retaining a reason must be rejected",
+          "status": "fail"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 246,
+      "workspace_lines_deleted": 383,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 556,
+      "workspace_text_lines_added_total": 802,
+      "workspace_text_lines_deleted_total": 383,
+      "inference_calls": 47,
+      "input_tokens": 1181715,
+      "cached_tokens": 1077248,
+      "uncached_input_tokens": 104467,
+      "output_tokens": 60210,
+      "cost_usd": 0.07809249,
+      "total_seconds": 671.185293,
+      "agent_execution_seconds": 600.03691,
+      "attempt": 1,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 2
+    },
+    {
+      "trial": "batchline-worker-draining-event__yx9PQ93",
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "mini-swe-agent",
+      "harness_version": "2.4.6",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "passed": true,
+      "reward": 1.0,
+      "verifier_rewards": {
+        "reward": 1.0
+      },
+      "verifier_groups": {
+        "G1_lifecycle": {
+          "note": "",
+          "status": "pass"
+        },
+        "G2_capacity_health": {
+          "note": "",
+          "status": "pass"
+        },
+        "G3_public_surfaces": {
+          "note": "",
+          "status": "pass"
+        },
+        "G4_event_structure": {
+          "note": "",
+          "status": "pass"
+        },
+        "G5_event_contract": {
+          "note": "",
+          "status": "pass"
+        },
+        "G6_integration_preservation": {
+          "note": "",
+          "status": "pass"
+        }
+      },
+      "workspace_changed_files": 10,
+      "workspace_lines_added": 152,
+      "workspace_lines_deleted": 380,
+      "workspace_untracked_files": 4,
+      "workspace_changed_files_total": 14,
+      "workspace_untracked_text_lines_added": 548,
+      "workspace_text_lines_added_total": 700,
+      "workspace_text_lines_deleted_total": 380,
+      "inference_calls": 43,
+      "input_tokens": 1389312,
+      "cached_tokens": 1296384,
+      "uncached_input_tokens": 92928,
+      "output_tokens": 44405,
+      "cost_usd": 0.07503322,
+      "total_seconds": 491.054998,
+      "agent_execution_seconds": 426.569415,
+      "attempt": 2,
+      "task_version": "0.2.0",
+      "family": "S1",
+      "primitive": "coordinated worker lifecycle plus Python/schema extraction and constrained verification",
+      "verifier_revision": 2
+    }
+  ],
+  "aggregates": [
+    {
+      "task": "agent-harness-smoke/batchline-worker-draining-event-extraction",
+      "harness": "mini-swe-agent",
+      "harness_version": "2.4.6",
+      "provider": "fireworks_ai",
+      "model": "accounts/fireworks/models/glm-5p3-flash",
+      "runs": 2,
+      "passes": 1,
+      "pass_rate": 0.5,
+      "median_reward": 0.5,
+      "median_inference_calls": 45.0,
+      "median_input_tokens": 1285513.5,
+      "median_cached_tokens": 1186816.0,
+      "median_output_tokens": 52307.5,
+      "median_cost_usd": 0.076562855,
+      "median_total_seconds": 581.1201455
+    }
+  ],
+  "revision_note": "Canonical Scenario 1 evaluation uses verifier r2. Agent execution artifacts are unchanged from the original runs."
+}

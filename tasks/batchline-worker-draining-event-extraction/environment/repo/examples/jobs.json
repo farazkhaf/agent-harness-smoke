@@ -1,0 +1,21 @@
+[
+  {
+    "id": "job_1001",
+    "kind": "thumbnail",
+    "queue": "media",
+    "status": "queued",
+    "attempt": 0,
+    "max_attempts": 4,
+    "payload": {"asset_id": "asset_42"}
+  },
+  {
+    "id": "job_1002",
+    "kind": "notify",
+    "queue": "notifications",
+    "status": "succeeded",
+    "attempt": 1,
+    "max_attempts": 5,
+    "payload": {"user_id": "user_7"},
+    "result": {"message_id": "msg_900"}
+  }
+]

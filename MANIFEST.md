@@ -1,12 +1,16 @@
 # Release manifest
 
-Agent Harness Smoke v0.1.0 contains:
+Agent Harness Smoke v0.2.0 contains:
 
-- five Harbor task packages under `tasks/`;
-- the `batchline-focused` suite definition;
-- version-pinned OpenCode and Mini-SWE runtime wrappers, profiles, and image definitions;
-- generic task binding, running, normalization, and collection utilities;
-- the canonical 15-cell result matrix;
-- OpenCode and Mini-SWE run receipts, trajectories, workspace observations, and verifier output for ten canonical public-harness cells;
-- methodology, results, task-design, reproducibility, evidence/privacy, provenance, and validation documentation;
+- six focused Harbor task packages and Scenario 1 under `tasks/`;
+- version-pinned OpenCode and Mini-SWE runtime wrappers/profiles plus generic binding/reporting utilities;
+- focused and Scenario 1 suite definitions;
+- normalized reference results under `results/`;
+- public run evidence and Scenario 1 verifier history under `evidence/`;
+- product-facing evaluation/reproducibility documentation under `docs/`;
+- a separate interpretive research layer under `research/`;
 - release metadata in `VERSION`, `CHANGELOG.md`, `CITATION.cff`, and `LICENSE`.
+
+The custom harness is represented at the public evidence layer through black-box outcomes and neutral telemetry. Its implementation, prompts, tool schemas, and raw private trajectory are not included.
+
+Two release artifacts can be produced from this tree: a core package that excludes `research/`, and a study snapshot that includes the full research layer. Both share the same tasks, results, and evidence.

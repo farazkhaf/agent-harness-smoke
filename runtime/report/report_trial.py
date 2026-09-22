@@ -162,6 +162,29 @@ def normalize_trial(trial_dir: Path) -> dict[str, Any]:
 
     inference_calls, inference_source = generic_inference_calls(trial_dir, agent_result)
 
+    verifier_groups = None
+    group_artifact = first_existing(trial_dir, ["scenario_verifier_groups.json"])
+    if group_artifact is not None:
+        try:
+            group_payload = load_json(group_artifact)
+            if isinstance(group_payload, dict):
+                verifier_groups = group_payload.get("groups")
+        except Exception:
+            verifier_groups = None
+
+    workspace_observation = None
+    observation_artifact = first_existing(
+        trial_dir,
+        ["scenario_workspace_observation.json", "smoke_observation.json"],
+    )
+    if observation_artifact is not None:
+        try:
+            candidate = load_json(observation_artifact)
+            if isinstance(candidate, dict):
+                workspace_observation = candidate
+        except Exception:
+            workspace_observation = None
+
     return {
         "schema_version": SCHEMA_VERSION,
         "suite": SUITE,
@@ -201,6 +224,10 @@ def normalize_trial(trial_dir: Path) -> dict[str, Any]:
             "uncached_input_tokens": uncached_input_tokens,
             "output_tokens": agent_result.get("n_output_tokens"),
             "cost_usd": agent_result.get("cost_usd"),
+        },
+        "diagnostics": {
+            "verifier_groups": verifier_groups,
+            "workspace_observation": workspace_observation,
         },
         "notes": {
             "report_boundary": "Compact public/quick-look report. Raw Harbor/native trajectories remain separate drill-down evidence.",
@@ -251,6 +278,35 @@ def markdown(report: dict[str, Any]) -> str:
         "```json",
         json.dumps(o["rewards"], indent=2, ensure_ascii=False),
         "```",
+    ]
+    diagnostics = report.get("diagnostics") or {}
+    groups = diagnostics.get("verifier_groups")
+    observation = diagnostics.get("workspace_observation")
+    if groups is not None:
+        lines += [
+            "",
+            "## Scenario verifier groups",
+            "",
+            "```json",
+            json.dumps(groups, indent=2, ensure_ascii=False),
+            "```",
+        ]
+    if isinstance(observation, dict):
+        lines += [
+            "",
+            "## Workspace observation",
+            "",
+            f"- Tracked changed files: {fmt(observation.get('changed_files'))}",
+            f"- Tracked lines added/deleted: {fmt(observation.get('lines_added'))} / {fmt(observation.get('lines_deleted'))}",
+            f"- Untracked files: {fmt(observation.get('untracked_files'))}",
+        ]
+        if observation.get("workspace_changed_files_total") is not None:
+            lines += [
+                f"- Total observed changed files: {fmt(observation.get('workspace_changed_files_total'))}",
+                f"- Untracked text lines added: {fmt(observation.get('untracked_text_lines_added'))}",
+                f"- Total observed text lines added/deleted: {fmt(observation.get('workspace_text_lines_added_total'))} / {fmt(observation.get('workspace_text_lines_deleted_total'))}",
+            ]
+    lines += [
         "",
         "> Raw trajectories are intentionally not summarized here. They remain available as drill-down evidence in the Harbor trial artifacts.",
     ]
@@ -260,6 +316,8 @@ def markdown(report: dict[str, Any]) -> str:
 def flat_row(report: dict[str, Any]) -> dict[str, Any]:
     t = report["timing"]
     m = report["telemetry"]
+    diagnostics = report.get("diagnostics") or {}
+    observation = diagnostics.get("workspace_observation") or {}
     return {
         "trial": report["trial"]["name"],
         "task": report["task"]["id"],
@@ -270,6 +328,15 @@ def flat_row(report: dict[str, Any]) -> dict[str, Any]:
         "passed": report["outcome"]["passed"],
         "reward": report["outcome"]["reward"],
         "verifier_rewards": report["outcome"]["rewards"],
+        "verifier_groups": diagnostics.get("verifier_groups"),
+        "workspace_changed_files": observation.get("changed_files"),
+        "workspace_lines_added": observation.get("lines_added"),
+        "workspace_lines_deleted": observation.get("lines_deleted"),
+        "workspace_untracked_files": observation.get("untracked_files"),
+        "workspace_changed_files_total": observation.get("workspace_changed_files_total"),
+        "workspace_untracked_text_lines_added": observation.get("untracked_text_lines_added"),
+        "workspace_text_lines_added_total": observation.get("workspace_text_lines_added_total"),
+        "workspace_text_lines_deleted_total": observation.get("workspace_text_lines_deleted_total"),
         "inference_calls": m["inference_calls"],
         "input_tokens": m["input_tokens"],
         "cached_tokens": m["cached_tokens"],
@@ -284,6 +351,7 @@ def flat_row(report: dict[str, Any]) -> dict[str, Any]:
 def write_csv(report: dict[str, Any], path: Path) -> None:
     row = flat_row(report)
     row["verifier_rewards"] = json.dumps(row["verifier_rewards"], ensure_ascii=False, sort_keys=True)
+    row["verifier_groups"] = json.dumps(row.get("verifier_groups") or {}, ensure_ascii=False, sort_keys=True)
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(row.keys()))
         writer.writeheader()

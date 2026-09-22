@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://batchline.example.invalid/schemas/worker-events.schema.json",
+  "title": "Batchline worker lifecycle events",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/WorkerHeartbeatEvent"
+    },
+    {
+      "$ref": "#/$defs/WorkerUnavailableEvent"
+    },
+    {
+      "$ref": "#/$defs/WorkerRateLimitedEvent"
+    },
+    {
+      "$ref": "#/$defs/WorkerDrainingEvent"
+    },
+    {
+      "$ref": "#/$defs/WorkerResumedEvent"
+    }
+  ],
+  "$defs": {
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "WorkerHeartbeatEvent": {
+      "title": "WorkerHeartbeatEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "worker.heartbeat"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "worker",
+            "service",
+            "queue",
+            "active_jobs",
+            "capacity"
+          ],
+          "properties": {
+            "worker": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "service": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "active_jobs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "capacity": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "draining": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkerUnavailableEvent": {
+      "title": "WorkerUnavailableEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "worker.unavailable"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "worker",
+            "service",
+            "queue",
+            "last_seen_at",
+            "unavailable_seconds"
+          ],
+          "properties": {
+            "worker": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "service": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "last_seen_at": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "unavailable_seconds": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkerRateLimitedEvent": {
+      "title": "WorkerRateLimitedEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "worker.rate_limited"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "worker",
+            "service",
+            "queue",
+            "provider",
+            "limit_name"
+          ],
+          "properties": {
+            "worker": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "service": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "provider": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "limit_name": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "detail": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkerDrainingEvent": {
+      "title": "WorkerDrainingEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "worker.draining"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "worker",
+            "service",
+            "queue",
+            "reason",
+            "active_jobs"
+          ],
+          "properties": {
+            "worker": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "service": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "reason": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "active_jobs": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkerResumedEvent": {
+      "title": "WorkerResumedEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "worker.resumed"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "worker",
+            "service",
+            "queue",
+            "active_jobs",
+            "capacity"
+          ],
+          "properties": {
+            "worker": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "service": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "active_jobs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "capacity": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

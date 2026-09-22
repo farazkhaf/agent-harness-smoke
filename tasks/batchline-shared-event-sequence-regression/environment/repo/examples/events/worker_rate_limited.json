@@ -1,0 +1,17 @@
+{
+  "event_id": "evt_limit_000001",
+  "event_type": "worker.rate_limited",
+  "occurred_at": "2026-01-01T12:00:00Z",
+  "payload": {
+    "detail": {
+      "bucket": "standard"
+    },
+    "limit_name": "requests-per-minute",
+    "provider": "images-api",
+    "queue": "media",
+    "service": "thumbnailer",
+    "worker": "thumb-01"
+  },
+  "schema_version": 1,
+  "source": "batchline.workers"
+}

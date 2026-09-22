@@ -5,13 +5,13 @@ type: software
 authors:
   - family-names: "Ul Khaf"
     given-names: "Faraz"
-version: "0.1.0"
-date-released: "2026-09-19"
+version: "0.2.0"
+date-released: "2026-09-21"
 license: MIT
 abstract: >-
   A Harbor-native focused-task suite for studying how coding-agent harnesses
   interact with software workspaces under controlled task and model conditions.
-  Version 0.1.0 contains five Batchline focused tasks and a 15-cell canonical
+  Version 0.2.0 contains six Batchline focused tasks and an 18-cell canonical
   result matrix across OpenCode, Mini-SWE-Agent, and one private custom-harness
   snapshot.
 keywords:

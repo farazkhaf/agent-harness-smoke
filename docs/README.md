@@ -1,13 +1,22 @@
-# Documentation
+# Product documentation
 
-- [`../RESULTS.md`](../RESULTS.md) — canonical results, workspace observations, and trajectory-supported findings.
-- [`methodology.md`](methodology.md) — evaluation model, comparison rules, and telemetry interpretation.
-- [`reproducibility.md`](reproducibility.md) — build, run, normalize, and collect workflow.
-- [`task_design.md`](task_design.md) — focused-task families and verifier boundaries.
-- [`evidence_and_privacy.md`](evidence_and_privacy.md) — published run evidence and custom-harness boundary.
-- [`../PROVENANCE.md`](../PROVENANCE.md) — task identities, versions, authorship, and canonical-run conventions.
-- [`../VALIDATION.md`](../VALIDATION.md) — task, runtime, and formal matrix validation.
+The active product-facing documentation is organized separately from interpretive research.
 
-Release metadata is available at the repository root in [`../CITATION.cff`](../CITATION.cff), [`../CHANGELOG.md`](../CHANGELOG.md), [`../VERSION`](../VERSION), and [`../LICENSE`](../LICENSE).
+## Evaluation
 
-Task-specific design and control notes are stored beside each task in `tasks/<task>/AUTHORING.md` and `AUTHOR_VALIDATION.md`.
+- [`evaluation/methodology.md`](evaluation/methodology.md) — verifier, observer, telemetry, and trajectory evidence model.
+- [`evaluation/task_design.md`](evaluation/task_design.md) — task-family and verifier-boundary rules.
+- [`evaluation/scenario1_run_protocol.md`](evaluation/scenario1_run_protocol.md) — repeated-run protocol and validity rules.
+- [`evaluation/scenario1_verifier_revision.md`](evaluation/scenario1_verifier_revision.md) — r1/r2/r3 evaluator history and adjudication.
+
+## Reproducibility
+
+- [`reproducibility/README.md`](reproducibility/README.md) — build/run/normalize/collect workflow.
+- [`reproducibility/evidence_and_privacy.md`](reproducibility/evidence_and_privacy.md) — public evidence surface and custom-harness boundary.
+- [`reproducibility/release_artifacts.md`](reproducibility/release_artifacts.md) — core package vs study snapshot.
+
+## Provenance
+
+- [`provenance/V1_PROMOTION_PROVENANCE.md`](provenance/V1_PROMOTION_PROVENANCE.md) — V1 execution-to-release mapping.
+
+Research objective, methods, and findings live under [`../research/`](../research/). Development-stage notes are retained under `research/archive/`, not in the active product documentation tree.

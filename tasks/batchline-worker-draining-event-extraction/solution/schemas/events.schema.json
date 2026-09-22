@@ -1,0 +1,607 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://batchline.example.invalid/schemas/events.schema.json",
+  "title": "Batchline lifecycle event",
+  "description": "Envelope and payload definitions for Batchline job, worker, and service lifecycle events.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/JobQueuedEvent"
+    },
+    {
+      "$ref": "#/$defs/JobStartedEvent"
+    },
+    {
+      "$ref": "#/$defs/JobSucceededEvent"
+    },
+    {
+      "$ref": "#/$defs/JobFailedEvent"
+    },
+    {
+      "$ref": "#/$defs/JobCanceledEvent"
+    },
+    {
+      "$ref": "#/$defs/JobRetryScheduledEvent"
+    },
+    {
+      "$ref": "worker-events.schema.json#/$defs/WorkerHeartbeatEvent"
+    },
+    {
+      "$ref": "worker-events.schema.json#/$defs/WorkerUnavailableEvent"
+    },
+    {
+      "$ref": "worker-events.schema.json#/$defs/WorkerRateLimitedEvent"
+    },
+    {
+      "$ref": "worker-events.schema.json#/$defs/WorkerDrainingEvent"
+    },
+    {
+      "$ref": "worker-events.schema.json#/$defs/WorkerResumedEvent"
+    },
+    {
+      "$ref": "#/$defs/ServiceConfigLoadedEvent"
+    },
+    {
+      "$ref": "#/$defs/ServiceConfigRejectedEvent"
+    }
+  ],
+  "$defs": {
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "JobStatus": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "canceled"
+      ]
+    },
+    "JobIdentity": {
+      "type": "object",
+      "required": [
+        "job_id",
+        "kind",
+        "queue"
+      ],
+      "properties": {
+        "job_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "kind": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "queue": {
+          "$ref": "#/$defs/NonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ErrorObject": {
+      "type": "object",
+      "required": [
+        "code",
+        "message",
+        "detail"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "message": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "detail": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "JobQueuedEvent": {
+      "title": "JobQueuedEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "job.queued"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "kind",
+            "queue",
+            "status",
+            "attempt",
+            "max_attempts"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "kind": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "status": {
+              "$ref": "#/$defs/JobStatus"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "JobStartedEvent": {
+      "title": "JobStartedEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "job.started"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "kind",
+            "queue",
+            "status",
+            "attempt",
+            "max_attempts"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "kind": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "status": {
+              "$ref": "#/$defs/JobStatus"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "JobSucceededEvent": {
+      "title": "JobSucceededEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "job.succeeded"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "kind",
+            "queue",
+            "status",
+            "attempt",
+            "max_attempts"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "kind": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "status": {
+              "$ref": "#/$defs/JobStatus"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "result": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "JobFailedEvent": {
+      "title": "JobFailedEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "job.failed"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "kind",
+            "queue",
+            "status",
+            "attempt",
+            "max_attempts",
+            "error"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "kind": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "status": {
+              "$ref": "#/$defs/JobStatus"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "error": {
+              "$ref": "#/$defs/ErrorObject"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "JobCanceledEvent": {
+      "title": "JobCanceledEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "job.canceled"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "kind",
+            "queue",
+            "status",
+            "attempt",
+            "max_attempts"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "kind": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "status": {
+              "$ref": "#/$defs/JobStatus"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "JobRetryScheduledEvent": {
+      "title": "JobRetryScheduledEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "job.retry_scheduled"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "job_id",
+            "queue",
+            "attempt",
+            "next_attempt",
+            "delay_seconds"
+          ],
+          "properties": {
+            "job_id": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "queue": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "next_attempt": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "delay_seconds": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ServiceConfigLoadedEvent": {
+      "title": "ServiceConfigLoadedEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "service.config_loaded"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "service",
+            "environment",
+            "settings"
+          ],
+          "properties": {
+            "service": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "environment": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "settings": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ServiceConfigRejectedEvent": {
+      "title": "ServiceConfigRejectedEvent",
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "source",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "event_type": {
+          "const": "service.config_rejected"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "source": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "service",
+            "environment",
+            "errors"
+          ],
+          "properties": {
+            "service": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "environment": {
+              "$ref": "#/$defs/NonEmptyString"
+            },
+            "errors": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/NonEmptyString"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
